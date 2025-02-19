@@ -14,9 +14,10 @@ count = 0
 while game.is_active:
     count += 1
     player = game.current_player
+    print("History", game.history)
     player_id = player.player_id
     if player.can_play(game.current_card):
-        i, new_color = players[player_id].take_turn(player.hand, game.current_card)
+        i, new_color = players[player_id].take_turn(player.hand, game.current_card, game.history)
  
         print("Player {} played {}".format(player, player.hand[i]))
         game.play(player=player_id, card=i, new_color=new_color)

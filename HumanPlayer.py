@@ -5,11 +5,11 @@ class HumanPlayer(Player):
     def __init__(self):
         super().__init__()
 
-    def take_turn(self, hand, current_card):
+    def take_turn(self, hand, current_card, history):
         
         possible_cards = [card for card in hand if current_card.playable(card)]
 
-        print("The possible cards you can play are:", [str(c) for c in possible_cards])
+        print("You have", len(hand), "cards, The possible cards you can play are:", [str(c) for c in possible_cards])
         print("Enter the index of the card you would like to play:")
         choice = possible_cards[int(input())]
 

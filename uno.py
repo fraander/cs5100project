@@ -148,6 +148,7 @@ class UnoGame:
         self._player_cycle = ReversibleCycle(self.players)
         self._current_player = next(self._player_cycle)
         self._winner = None
+        self.history = []
 
     def __next__(self):
         """
@@ -233,6 +234,7 @@ class UnoGame:
 
         played_card = _player.hand.pop(card)
         self.deck.append(played_card)
+        self.history.append((player, 'play', played_card, new_color))
 
         card_color = played_card.color
         card_type = played_card.card_type
@@ -275,6 +277,7 @@ class UnoGame:
         """
         penalty_cards = [self.deck.pop(0) for i in range(n)]
         player.hand.extend(penalty_cards)
+        self.history.append((player, 'draw', n))
 
 
 class ReversibleCycle:

@@ -7,7 +7,7 @@ class AIPlayer(Player):
     def __init__(self):
         super().__init__()
 
-    def take_turn(self, hand, current_card):
+    def take_turn(self, hand, current_card, history):
         
         possible_cards = [card for card in hand if current_card.playable(card)]
 

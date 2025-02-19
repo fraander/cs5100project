@@ -3,7 +3,7 @@ class Player:
     def __init__(self):
         pass
     
-    def take_turn(self, hand, current_card):
+    def take_turn(self, hand, current_card, history):
         """
         Takes one turn.
 

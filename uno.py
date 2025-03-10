@@ -255,7 +255,7 @@ class UnoGame:
             next(self)
         else:
             self._winner = _player
-            self._print_winner()
+            #self._print_winner()
 
     def _print_winner(self):
         """

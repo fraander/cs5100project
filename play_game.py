@@ -1,11 +1,11 @@
 from uno import UnoGame, COLORS
 import random
-from AIPlayer import AIPlayer
+from RandomPlayer import RandomPlayer
 from HumanPlayer import HumanPlayer
 
 #players = random.randint(2, 15)
 num_players = 4
-players = [AIPlayer(), AIPlayer(), AIPlayer(), HumanPlayer()]
+players = [RandomPlayer(), RandomPlayer(), RandomPlayer(), HumanPlayer()]
 game = UnoGame(num_players)
 
 print("Starting a {} player game".format(num_players))

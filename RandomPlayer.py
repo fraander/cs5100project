@@ -2,7 +2,7 @@ from uno import COLORS
 from Player import Player
 import random
 
-class AIPlayer(Player):
+class RandomPlayer(Player):
 
     def __init__(self):
         super().__init__()

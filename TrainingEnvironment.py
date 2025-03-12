@@ -1,6 +1,6 @@
 from uno import UnoGame, COLORS
 import numpy as np
-from AIPlayer import AIPlayer
+from RandomPlayer import RandomPlayer
 
 class TrainingEnvironment:
 
@@ -8,6 +8,7 @@ class TrainingEnvironment:
 
     rewards = {
         'wrong_card': -10,
+        'play_card': 10,
         'win': 10000,
         'lose': -10000,
     }
@@ -16,7 +17,7 @@ class TrainingEnvironment:
         self.game = UnoGame(self.num_players)
         self.player_number = np.random.randint(0, self.num_players)
         
-        self.ai_player = AIPlayer()
+        self.ai_player = RandomPlayer()
 
         while self.game.is_active and (self.game.current_player.player_id != self.player_number or not self.game.current_player.can_play(self.game.current_card)):
             #print(self.game.is_active, self.game.current_player.player_id, self.player_number)
@@ -37,6 +38,7 @@ class TrainingEnvironment:
         done = not self.game.is_active
         return obs, reward, done
 
+    # TODO: Rahul
     def move(self, move):
         # Moves are:
         # 1 - play the matching color

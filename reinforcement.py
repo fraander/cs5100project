@@ -6,6 +6,8 @@ from TrainingEnvironment import TrainingEnvironment
 env = TrainingEnvironment()
 NUM_ACTIONS = 9
 
+
+# TODO: Frank
 def hash(obs):
     
     match_num = any([c.card_type == obs['current_card'].card_type for c in obs['hand']])
@@ -16,6 +18,7 @@ def hash(obs):
     rev_card = any([c.card_type == 'reverse' for c in obs['hand']])
 
     return match_num*32 + match_color*16 + match_both*8 + black_card*4 + skip_card*2 + rev_card
+
 
 def test_table(Q_table, num_episodes):
     

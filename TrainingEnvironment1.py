@@ -2,6 +2,8 @@ from uno import UnoGame, COLORS
 import numpy as np
 from AIPlayer import AIPlayer
 
+# TODO: Rahul, update action space to match `todo.md`
+
 class TrainingEnvironment1:
 
     num_players = 4

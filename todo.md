@@ -73,7 +73,8 @@ choose one it has the most of between the two if tied.
 
 # training
 
-1. action space
-2. hash function
+1. action space -> Rahul
+2. hash function -> Frank
 
 # adjustments from there
+3. pickling -> next time !

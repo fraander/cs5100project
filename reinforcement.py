@@ -7,7 +7,7 @@ env = TrainingEnvironment()
 NUM_ACTIONS = 9
 
 
-# TODO: Frank
+# TODO: Frank, update hash function to match `todo.md`
 def hash(obs):
     
     match_num = any([c.card_type == obs['current_card'].card_type for c in obs['hand']])
@@ -20,8 +20,10 @@ def hash(obs):
     return match_num*32 + match_color*16 + match_both*8 + black_card*4 + skip_card*2 + rev_card
 
 
-def test_table(Q_table, num_episodes):
-    
+def test_table(Q_table, num_episodes=1000):
+    """
+    Runs 1000 games, checks wins vs loses
+    """
     avg_reward = 0
     wins = 0
     loses = 0

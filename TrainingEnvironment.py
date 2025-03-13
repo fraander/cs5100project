@@ -38,7 +38,6 @@ class TrainingEnvironment:
         done = not self.game.is_active
         return obs, reward, done
 
-    # TODO: Rahul
     def move(self, move):
         # Moves are:
         # 1 - play the matching color

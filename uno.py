@@ -1,7 +1,6 @@
 from random import shuffle, choice
 from itertools import product, repeat, chain
 
-
 COLORS = ['red', 'yellow', 'green', 'blue']
 ALL_COLORS = COLORS + ['black']
 NUMBERS = list(range(10)) + list(range(1, 10))
@@ -20,6 +19,7 @@ class UnoCard:
 
     >>> card = UnoCard('red', 5)
     """
+
     def __init__(self, color, card_type):
         self._validate(color, card_type)
         self.color = color
@@ -78,9 +78,9 @@ class UnoCard:
         otherwise return False
         """
         return (
-            self._color == other.color or
-            self.card_type == other.card_type or
-            other.color == 'black'
+                self._color == other.color or
+                self.card_type == other.card_type or
+                other.color == 'black'
         )
 
 
@@ -95,6 +95,7 @@ class UnoPlayer:
     >>> cards = [UnoCard('red', n) for n in range(7)]
     >>> player = UnoPlayer(cards)
     """
+
     def __init__(self, cards, player_id=None):
         if len(cards) != 7:
             raise ValueError(
@@ -136,6 +137,7 @@ class UnoGame:
 
     >>> game = UnoGame(5)
     """
+
     def __init__(self, players, random=True):
         if not isinstance(players, int):
             raise ValueError('Invalid game: players must be integer')
@@ -234,7 +236,7 @@ class UnoGame:
 
         played_card = _player.hand.pop(card)
         self.deck.append(played_card)
-        self.history.append((player, 'play', played_card, new_color))
+        self.history.append({"player": player, "action": 'play', "played_card": played_card, "new_color": new_color})
 
         card_color = played_card.color
         card_type = played_card.card_type
@@ -255,7 +257,7 @@ class UnoGame:
             next(self)
         else:
             self._winner = _player
-            #self._print_winner()
+            # self._print_winner()
 
     def _print_winner(self):
         """
@@ -277,7 +279,7 @@ class UnoGame:
         """
         penalty_cards = [self.deck.pop(0) for i in range(n)]
         player.hand.extend(penalty_cards)
-        self.history.append((player, 'draw', n))
+        self.history.append({"player": player, "action": 'draw', "num_cards": n})
 
 
 class ReversibleCycle:
@@ -301,6 +303,7 @@ class ReversibleCycle:
     >>> next(rc)
     2
     """
+
     def __init__(self, iterable):
         self._items = list(iterable)
         self._pos = None

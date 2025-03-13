@@ -21,34 +21,18 @@ class TrainingEnvironment:
         'lose': -10000,
     }
 
-    def __init__(self):
-        self.player_number = None
-        self.ai_player = None
-        self.game = None
-
     def reset(self):
         self.game = UnoGame(self.num_players)
         self.player_number = np.random.randint(0, self.num_players)
 
         self.ai_player = RandomPlayer()
 
-        while self.game.is_active and (
-                self.game.current_player.player_id != self.player_number or not self.game.current_player.can_play(
-                self.game.current_card)):
-            # print(self.game.is_active, self.game.current_player.player_id, self.player_number)
-            player = self.game.current_player
-
-            # print("History", game.history)
-            player_id = player.player_id
-            if player.can_play(self.game.current_card):
-                i, new_color = self.ai_player.take_turn(player.hand, self.game.current_card, self.game.history)
-                self.game.play(player=player_id, card=i, new_color=new_color)
-            else:
-                self.game.play(player=player_id, card=None)
+        self.handle_other_players()
 
         obs = {"hand": self.game.current_player.hand,
                "current_card": self.game.current_card,
-               "history": self.game.history}
+               "history": self.game.history,
+               "player_number": self.player_number,}
         reward = 0
         done = not self.game.is_active
         return obs, reward, done

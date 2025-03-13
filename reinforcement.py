@@ -25,7 +25,6 @@ def hash(obs) -> int:
     cw_num = (player_num - 1) % 3
     acw_num = (player_num + 1) % 3
 
-
     # calculate each match
     match_num = 1 if any([c.card_type == current.card_type for c in hand]) else 0 # any card matches current card type
     match_color = min(2, len([c for c in hand if c.color == current.color])) # any card matches current card color
@@ -40,15 +39,15 @@ def hash(obs) -> int:
     # clockwise (cw) is default, anti-clockwise (acw) is if an odd number of reverses have been played
     direction_of_play = "cw" if len([h for h in history if h.played_card == "reverse"]) % 2 else "acw"
 
-    # get history for each player
-    cw_history = list(filter(lambda h: h.player == cw_num, history))
-    acw_history = list(filter(lambda h: h.player == acw_num, history))
-
     # start at 7 cards, add any drawn cards, remove any played cards
-    cw_hand_size = 7 + sum([h.num_cards for h in cw_history if h.action == 'draw']) \
-                   - len([h for h in history if cw_history and h.action == 'play'])
-    acw_hand_size = 7 + sum([h.num_cards for h in acw_history if h.player == acw_num and h.action == 'draw']) \
-                   - len([h for h in acw_history if h.player == acw_num and h.action == 'play'])
+    cw_hand_size = 7 + sum([h.num_cards for h in history if h.player == cw_num and h.action == 'draw']) \
+                   - len([h for h in history if h.player == cw_num and h.action == 'play'])
+    acw_hand_size = 7 + sum([h.num_cards for h in history if h.player == acw_num and h.action == 'draw']) \
+                   - len([h for h in history if h.player == acw_num and h.action == 'play'])
+
+    # based on direction of play, use cw or acw and next and next next
+    next_uno = cw_hand_size == 1 if direction_of_play == 'cw' else acw_hand_size == 1
+    next_next_uno = acw_hand_size == 1 if direction_of_play == 'acw' else cw_hand_size == 1
 
     # find the most recent play by the player before the most recent 'draw' that isn't 'black'
     cw_found_draw = False
@@ -69,8 +68,7 @@ def hash(obs) -> int:
             acw_last_draw_color = color_indices[h.played_card.color]
             break
 
-    next_uno = cw_hand_size == 1 if direction_of_play == 'cw' else acw_hand_size == 1
-    next_next_uno = acw_hand_size == 1 if direction_of_play == 'acw' else cw_hand_size == 1
+    # based on direction of play, use cw or acw and next and next next
     next_last_draw_color = cw_last_draw_color == 1 if direction_of_play == 'cw' else acw_last_draw_color == 1
     next_next_last_draw_color = acw_last_draw_color == 1 if direction_of_play == 'acw' else acw_last_draw_color == 1
 

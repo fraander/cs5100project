@@ -1,11 +1,16 @@
-from uno import UnoGame, COLORS
 import numpy as np
+
 from RandomPlayer import RandomPlayer
+from uno import UnoGame
 
 
 # TODO: Rahul, update action space to match `todo.md`
 
-class TrainingEnvironment1:
+def matching_color(card, current):
+    return (card.color == current.color or current.color == 'black') and current.playable(card)
+
+
+class TrainingEnvironment:
     num_players = 3
 
     rewards = {
@@ -15,6 +20,11 @@ class TrainingEnvironment1:
         'win': 10000,
         'lose': -10000,
     }
+
+    def __init__(self):
+        self.player_number = None
+        self.ai_player = None
+        self.game = None
 
     def reset(self):
         self.game = UnoGame(self.num_players)
@@ -47,22 +57,23 @@ class TrainingEnvironment1:
     helper methods for actions
     '''
 
-    def matching_color(self, card, current):
-        return (card.color == current.color or current.color == 'black') and current.playable(card)
-
-    def matching_number(self, card, current):
+    @staticmethod
+    def matching_number(card, current):
         return (card.card_type == current.card_type or current.color == 'black') and current.playable(card)
 
     def matching_color_and_number(self, card, current):
-        return self.matching_color(card, current) and self.matching_number(card, current)
+        return matching_color(card, current) and self.matching_number(card, current)
 
-    def play_skip(self, card, current):
+    @staticmethod
+    def play_skip(card, current):
         return card.card_type == 'skip' and current.playable(card)
 
-    def play_reverse(self, card, current):
+    @staticmethod
+    def play_reverse(card, current):
         return card.card_type == 'reverse' and current.playable(card)
 
-    def play_black(self, card, current):
+    @staticmethod
+    def play_black(card, current):
         return card.color == 'black' and current.playable(card)
 
     # Moves are:
@@ -77,7 +88,7 @@ class TrainingEnvironment1:
     # 9 - play a black card, change color to BLUE
     def get_move_filter(self, move):
         move_mapping = {
-            0: (self.matching_color, None),
+            0: (matching_color, None),
             1: (self.matching_number, None),
             2: (self.matching_color_and_number, None),
             3: (self.play_skip, None),
@@ -89,7 +100,8 @@ class TrainingEnvironment1:
         }
         return move_mapping.get(move, (None, None))
 
-    def choose_card_index(self, hand, current, filter_fn, move):
+    @staticmethod
+    def choose_card_index(hand, current, filter_fn, move):
         for idx, card in enumerate(hand):
             if filter_fn(card, current):
                 # For moves 0-4, avoid playing a black card.

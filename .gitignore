@@ -3,3 +3,6 @@
 
 # Ignore JetBrains IDE configuration folder (like PyCharm, WebStorm, etc.)
 .idea/
+__pycache__/
+/__pycache__
+__pycache__/TrainingEnvironment.cpython-312.pyc

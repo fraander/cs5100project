@@ -1,15 +1,17 @@
 from uno import UnoGame, COLORS
 import numpy as np
-from AIPlayer import AIPlayer
+from RandomPlayer import RandomPlayer
+
 
 # TODO: Rahul, update action space to match `todo.md`
 
 class TrainingEnvironment1:
-
-    num_players = 4
+    num_players = 3
 
     rewards = {
-        'wrong_card': -10,
+        'play_card': 10,
+        'two_left': 100,
+        'uno': 500,
         'win': 10000,
         'lose': -10000,
     }
@@ -17,13 +19,15 @@ class TrainingEnvironment1:
     def reset(self):
         self.game = UnoGame(self.num_players)
         self.player_number = np.random.randint(0, self.num_players)
-        
-        self.ai_player = AIPlayer()
 
-        while self.game.is_active and (self.game.current_player.player_id != self.player_number or not self.game.current_player.can_play(self.game.current_card)):
-            #print(self.game.is_active, self.game.current_player.player_id, self.player_number)
+        self.ai_player = RandomPlayer()
+
+        while self.game.is_active and (
+                self.game.current_player.player_id != self.player_number or not self.game.current_player.can_play(
+                self.game.current_card)):
+            # print(self.game.is_active, self.game.current_player.player_id, self.player_number)
             player = self.game.current_player
-            
+
             # print("History", game.history)
             player_id = player.player_id
             if player.can_play(self.game.current_card):
@@ -38,17 +42,17 @@ class TrainingEnvironment1:
         reward = 0
         done = not self.game.is_active
         return obs, reward, done
-    
 
     '''
     helper methods for actions
     '''
+
     def matching_color(self, card, current):
         return (card.color == current.color or current.color == 'black') and current.playable(card)
 
     def matching_number(self, card, current):
         return (card.card_type == current.card_type or current.color == 'black') and current.playable(card)
-    
+
     def matching_color_and_number(self, card, current):
         return self.matching_color(card, current) and self.matching_number(card, current)
 
@@ -60,7 +64,7 @@ class TrainingEnvironment1:
 
     def play_black(self, card, current):
         return card.color == 'black' and current.playable(card)
-    
+
     # Moves are:
     # 1 - play the matching color
     # 2 - play the matching number
@@ -84,7 +88,7 @@ class TrainingEnvironment1:
             8: (self.play_black, 'blue'),
         }
         return move_mapping.get(move, (None, None))
-    
+
     def choose_card_index(self, hand, current, filter_fn, move):
         for idx, card in enumerate(hand):
             if filter_fn(card, current):
@@ -93,11 +97,11 @@ class TrainingEnvironment1:
                     continue
                 return idx
         return None
-    
+
     def handle_other_players(self):
         while self.game.is_active and (
-            self.game.current_player.player_id != self.player_number or
-            not self.game.current_player.can_play(self.game.current_card)
+                self.game.current_player.player_id != self.player_number or
+                not self.game.current_player.can_play(self.game.current_card)
         ):
             player = self.game.current_player
             player_id = player.player_id
@@ -106,7 +110,6 @@ class TrainingEnvironment1:
                 self.game.play(player=player_id, card=i, new_color=new_color)
             else:
                 self.game.play(player=player_id, card=None)
-
 
     def move(self, move):
         hand = self.game.current_player.hand
@@ -152,6 +155,3 @@ class TrainingEnvironment1:
                 reward = self.rewards['lose']
         done = not self.game.is_active
         return obs, reward, done
-    
-
-        

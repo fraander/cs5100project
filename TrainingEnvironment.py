@@ -102,7 +102,9 @@ class TrainingEnvironment:
             4: (self.play_reverse, None),
             5: (self.play_black, None),
             6: (self.play_black, 'red'),
-            7: (self.play_black, 'green')
+            7: (self.play_black, 'green'),
+            8: (self.play_black, 'blue'),
+            9: (self.play_black, 'yellow'),
         }
         return move_mapping.get(move, (None, None))
 

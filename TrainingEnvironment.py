@@ -110,13 +110,15 @@ class TrainingEnvironment:
 
     @staticmethod
     def choose_card_index(hand, current, filter_fn, move):
+        best_card = None
         for idx, card in enumerate(hand):
             if filter_fn(card, current):
-                # For moves 0-4, avoid playing a black card.
                 if move < 5 and card.color == 'black':
                     continue
-                return idx
-        return None
+                if card.card_type in ["+4", "+2", "skip", "reverse"]:  
+                    return idx  # Prioritize action cards
+                best_card = idx  
+        return best_card  # Play normal card only if no action cards available
 
     def handle_other_players(self):
         while self.game.is_active and (

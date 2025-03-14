@@ -21,6 +21,17 @@ class TrainingEnvironment:
         'lose': -10000,
     }
 
+    actions = {
+        1: "match_color",
+        2: "match_number",
+        3: "skip",
+        4: "reverse",
+        5: "draw_2",
+        6: "draw_4",
+        7: "wild"
+    }
+
+
     def reset(self):
         self.game = UnoGame(self.num_players)
         self.player_number = np.random.randint(0, self.num_players)
@@ -29,10 +40,23 @@ class TrainingEnvironment:
 
         self.handle_other_players()
 
-        obs = {"hand": self.game.current_player.hand,
-               "current_card": self.game.current_card,
-               "history": self.game.history,
-               "player_number": self.player_number,}
+        obs = {
+    "hand": self.game.current_player.hand,
+    "current_card": self.game.current_card,
+    "history": self.game.history,
+    "player_number": self.player_number,
+    "cards_p1": len(self.game.players[0].hand),
+    "cards_p2": len(self.game.players[1].hand),
+    "cards_p3": len(self.game.players[2].hand),
+    "last_color_p1": self.game.players[0].last_color,
+    "last_color_p2": self.game.players[1].last_color,
+    "last_color_p3": self.game.players[2].last_color,
+    "last_number_p1": self.game.players[0].last_number,
+    "last_number_p2": self.game.players[1].last_number,
+    "last_number_p3": self.game.players[2].last_number,
+    "direction": self.game.direction,
+}
+
         reward = 0
         done = not self.game.is_active
         return obs, reward, done
@@ -72,15 +96,13 @@ class TrainingEnvironment:
     # 9 - play a black card, change color to BLUE
     def get_move_filter(self, move):
         move_mapping = {
-            0: (matching_color, None),
-            1: (self.matching_number, None),
-            2: (self.matching_color_and_number, None),
+            1: (matching_color, None),
+            2: (self.matching_number, None),
             3: (self.play_skip, None),
             4: (self.play_reverse, None),
-            5: (self.play_black, 'red'),
-            6: (self.play_black, 'yellow'),
-            7: (self.play_black, 'green'),
-            8: (self.play_black, 'blue'),
+            5: (self.play_black, None),
+            6: (self.play_black, 'red'),
+            7: (self.play_black, 'green')
         }
         return move_mapping.get(move, (None, None))
 
@@ -139,10 +161,23 @@ class TrainingEnvironment:
         # Process turns for other players
         self.handle_other_players()
 
-        # Build the new observation
-        obs = {"hand": self.game.current_player.hand,
-               "current_card": self.game.current_card,
-               "history": self.game.history}
+        # Build the new observation 
+        obs = {
+    "hand": self.game.current_player.hand,
+    "current_card": self.game.current_card,
+    "history": self.game.history,
+    "cards_p1": len(self.game.players[0].hand),
+    "cards_p2": len(self.game.players[1].hand),
+    "cards_p3": len(self.game.players[2].hand),
+    "last_color_p1": self.game.players[0].last_color,
+    "last_color_p2": self.game.players[1].last_color,
+    "last_color_p3": self.game.players[2].last_color,
+    "last_number_p1": self.game.players[0].last_number,
+    "last_number_p2": self.game.players[1].last_number,
+    "last_number_p3": self.game.players[2].last_number,
+    "direction": self.game.direction,
+}
+
         reward = 0
         if not self.game.is_active:
             if self.game.winner.player_id == self.player_number:

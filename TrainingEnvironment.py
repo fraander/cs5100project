@@ -15,6 +15,7 @@ class TrainingEnvironment:
 
     rewards = {
         'play_card': 10,
+        'wrong_card': 0,
         'two_left': 100,
         'uno': 500,
         'win': 10000,
@@ -41,20 +42,11 @@ class TrainingEnvironment:
         self.handle_other_players()
 
         obs = {
-    "hand": self.game.current_player.hand,
     "current_card": self.game.current_card,
+    "hand": self.game.current_player.hand,
     "history": self.game.history,
     "player_number": self.player_number,
-    "cards_p1": len(self.game.players[0].hand),
-    "cards_p2": len(self.game.players[1].hand),
-    "cards_p3": len(self.game.players[2].hand),
-    "last_color_p1": self.game.players[0].last_color,
-    "last_color_p2": self.game.players[1].last_color,
-    "last_color_p3": self.game.players[2].last_color,
-    "last_number_p1": self.game.players[0].last_number,
-    "last_number_p2": self.game.players[1].last_number,
-    "last_number_p3": self.game.players[2].last_number,
-    "direction": self.game.direction,
+    "direction": self.game._player_cycle._reverse,
 }
 
         reward = 0
@@ -140,7 +132,7 @@ class TrainingEnvironment:
         # Get the filtering function and intended new color for the move
         filter_fn, intended_color = self.get_move_filter(move)
         if filter_fn is None:
-            obs = {"hand": hand, "current_card": current, "history": self.game.history}
+            obs = {"hand": hand, "current_card": current, "history": self.game.history, "player_number": self.player_number, "direction": self.game._player_cycle._reverse}
             reward = self.rewards['wrong_card']
             done = not self.game.is_active
             return obs, reward, done
@@ -148,7 +140,7 @@ class TrainingEnvironment:
         # Choose a legal card index based on the filter
         card_index = self.choose_card_index(hand, current, filter_fn, move)
         if card_index is None:
-            obs = {"hand": hand, "current_card": current, "history": self.game.history}
+            obs = {"hand": hand, "current_card": current, "history": self.game.history, "player_number": self.player_number, "direction": self.game._player_cycle._reverse}
             reward = self.rewards['wrong_card']
             done = not self.game.is_active
             return obs, reward, done
@@ -157,7 +149,7 @@ class TrainingEnvironment:
         try:
             self.game.play(player=self.player_number, card=card_index, new_color=intended_color)
         except ValueError:
-            obs = {"hand": hand, "current_card": current, "history": self.game.history}
+            obs = {"hand": hand, "current_card": current, "history": self.game.history, "player_number": self.player_number, "direction": self.game._player_cycle._reverse}
             reward = self.rewards['wrong_card']
             done = not self.game.is_active
             return obs, reward, done
@@ -167,19 +159,11 @@ class TrainingEnvironment:
 
         # Build the new observation 
         obs = {
-    "hand": self.game.current_player.hand,
     "current_card": self.game.current_card,
+    "hand": self.game.current_player.hand,
     "history": self.game.history,
-    "cards_p1": len(self.game.players[0].hand),
-    "cards_p2": len(self.game.players[1].hand),
-    "cards_p3": len(self.game.players[2].hand),
-    "last_color_p1": self.game.players[0].last_color,
-    "last_color_p2": self.game.players[1].last_color,
-    "last_color_p3": self.game.players[2].last_color,
-    "last_number_p1": self.game.players[0].last_number,
-    "last_number_p2": self.game.players[1].last_number,
-    "last_number_p3": self.game.players[2].last_number,
-    "direction": self.game.direction,
+    "player_number": self.player_number,
+    "direction": self.game._player_cycle._reverse,
 }
 
         reward = 0

@@ -1,5 +1,7 @@
 import pickle
 import random
+from datetime import datetime, timedelta
+import csv
 
 import numpy as np
 from TrainingEnvironment import TrainingEnvironment
@@ -154,27 +156,40 @@ def avg_score(Q):
 
 
 
-def Q_learning(num_episodes=10000, gamma=0.9, epsilon=1, decay=0.999):
+def Q_learning(gamma=0.9, epsilon=1, decay=0.999):
+    start = datetime.now()
+    checkpoint = datetime.now()
+    logging = []
+    episode = 0
     Q = {}
     for i in range(12289):
         Q[i] = np.zeros(NUM_ACTIONS)
     num_updates = np.zeros((12289, NUM_ACTIONS))
 
-    for episode in range(num_episodes):
+    while datetime.now() < start + timedelta(minutes=520):
 
-        if episode > 1 and episode % 100 == 0:
-            print("{} out of {} episodes. The Q table has {} entries, the exploration rate is {}".format(episode,
-                                                                                                         num_episodes,
+        if datetime.now() > checkpoint + timedelta(minutes=5):
+            print("{} out of ?? episodes. The Q table has {} entries, the exploration rate is {}".format(episode,
                                                                                                          len(Q.keys()),
                                                                                                          epsilon))
-            avg, wins, loses = test_table(Q, 1000)
+            avg, wins, loses = test_table(Q, 10000)
             print("The Q_Table got an average reward of {} with {} wins and {} loses for a win percentage of {}".format(
                 avg, wins, loses, wins / (wins + loses) if wins + loses > 0 else 0))
-            idx = np.random.randint(12288, size=2)
             avg_scores, taz = avg_score(Q)
             print("Average Q score for each action: {}. There are {} states with no scores".format(avg_scores, taz))
-            print("Random sample of actions", Q[idx[0]], Q[idx[1]])
             print()
+            logging.append([datetime.now(), episode, epsilon, avg, wins, loses, wins / (wins + loses) if wins + loses > 0 else 0, taz])
+            for i in avg_scores:
+                logging[-1].append(i)
+            checkpoint = datetime.now()
+            epsilon *= decay
+            with open('logs3.18.csv', 'w', newline='') as file:
+                csvwriter = csv.writer(file)
+                csvwriter.writerows(logging)
+
+            # Save the Q-table dict to a file
+            with open('Q_table.pickle', 'wb') as handle:
+                pickle.dump(Q, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
         obs, reward, done = env.reset()
         moves = 0
@@ -196,16 +211,20 @@ def Q_learning(num_episodes=10000, gamma=0.9, epsilon=1, decay=0.999):
             Q[hs][action] = newQ
             num_updates[hs, action] += 1
 
-        epsilon *= decay
+        episode += 1
         # print("That game had {} steps and ended with result {}".format(moves, reward))
 
-    return Q
+    return Q, logging
 
 
-decay_rate = 0.999995
+decay_rate = 0.95
 
-Q_table = Q_learning(num_episodes=1000000, gamma=0.9, epsilon=1, decay=decay_rate)  # Run Q-learning
+Q_table, logs = Q_learning(gamma=0.9, epsilon=1, decay=decay_rate)  # Run Q-learning
 # Q_table = Q_learning(num_episodes=10000, gamma=0.9, epsilon=1, decay_rate=decay_rate) # Run Q-learning
+
+with open('logs3.18.csv', 'w', newline='') as file:
+    csvwriter = csv.writer(file)
+    csvwriter.writerows(logs)
 
 # Save the Q-table dict to a file
 with open('Q_table.pickle', 'wb') as handle:

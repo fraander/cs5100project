@@ -10,14 +10,13 @@ env = TrainingEnvironment()
 NUM_ACTIONS = 7
 
 color_indices = {
-    'red': 0,
-    'blue': 1,
-    'green': 2,
-    'yellow': 3,
+    'none': 0,
+    'red': 1,
+    'blue': 2,
+    'green': 3,
+    'yellow': 4,
 }
 
-
-# TODO: Frank, update hash function to match `todo.md`
 
 def hash(obs) -> int:
     # unpack observation
@@ -39,7 +38,6 @@ def hash(obs) -> int:
     match_reverse = 1 if any([c.color == current.color and c.card_type == 'reverse' for c in hand]) else 0 # any rev of color in hand
 
     # clockwise (cw) is default, anti-clockwise (acw) is if an odd number of reverses have been played
-    #direction_of_play = "cw" if len([h for h in history if h.played_card == "reverse"]) % 2 else "acw"
     direction_of_play = "cw" if direction else "acw"
 
     # start at 7 cards, add any drawn cards, remove any played cards
@@ -55,7 +53,7 @@ def hash(obs) -> int:
 
     # find the most recent play by the player before the most recent 'draw' that isn't 'black'
     cw_found_draw = False
-    cw_last_draw_color = random.choice(list(color_indices.values()))
+    cw_last_draw_color = 0 # random.choice(list(color_indices.values()))
     for h in reversed(history):
         if h['player'] == cw_num and h['action'] == 'draw':
             cw_found_draw = True
@@ -64,7 +62,7 @@ def hash(obs) -> int:
             break
 
     acw_found_draw = False
-    acw_last_draw_color = random.choice(list(color_indices.values()))
+    acw_last_draw_color = 0 # random.choice(list(color_indices.values()))
     for h in reversed(history):
         if h['player'] == acw_num and h['action'] == 'draw':
             acw_found_draw = True
@@ -76,9 +74,9 @@ def hash(obs) -> int:
     next_last_draw_color = cw_last_draw_color == 1 if direction_of_play == 'cw' else acw_last_draw_color == 1
     next_next_last_draw_color = acw_last_draw_color == 1 if direction_of_play == 'acw' else acw_last_draw_color == 1
     
-    if next_last_draw_color > 3:
+    if next_last_draw_color > 4:
         print('next_last_draw_color bad')
-    if next_last_draw_color > 3:
+    if next_last_draw_color > 4:
         print('next_last_draw_color bad')
     if next_next_uno > 1:
         print('next_next_uno bad')
@@ -101,16 +99,16 @@ def hash(obs) -> int:
 
     # convert matches to index and return
     return (next_next_last_draw_color
-            + 4 * next_last_draw_color
-            + 4 * 4 * next_next_uno
-            + 4 * 4 * 2 * next_uno
-            + 4 * 4 * 2 * 2 * draw_4
-            + 4 * 4 * 2 * 2 * 2 * wild
-            + 4 * 4 * 2 * 2 * 2 * 2 * match_reverse
-            + 4 * 4 * 2 * 2 * 2 * 2 * 2 * match_skip
-            + 4 * 4 * 2 * 2 * 2 * 2 * 2 * 2 * match_draw_2
-            + 4 * 4 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * match_color
-            + 4 * 4 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 3 * match_num)
+            + 5 * next_last_draw_color
+            + 5 * 4 * next_next_uno
+            + 5 * 4 * 2 * next_uno
+            + 5 * 4 * 2 * 2 * draw_4
+            + 5 * 4 * 2 * 2 * 2 * wild
+            + 5 * 4 * 2 * 2 * 2 * 2 * match_reverse
+            + 5 * 4 * 2 * 2 * 2 * 2 * 2 * match_skip
+            + 5 * 4 * 2 * 2 * 2 * 2 * 2 * 2 * match_draw_2
+            + 5 * 4 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * match_color
+            + 5 * 4 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 3 * match_num)
 
 
 def test_table(q, num_episodes=1000):

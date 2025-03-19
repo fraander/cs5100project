@@ -163,12 +163,12 @@ class TrainingEnvironment:
 
         # Build the new observation 
         obs = {
-    "current_card": self.game.current_card,
-    "hand": self.game.current_player.hand,
-    "history": self.game.history,
-    "player_number": self.player_number,
-    "direction": self.game._player_cycle._reverse,
-}
+            "current_card": self.game.current_card,
+            "hand": self.game.current_player.hand,
+            "history": self.game.history,
+            "player_number": self.player_number,
+            "direction": self.game._player_cycle._reverse,
+        }
 
         reward = 0
         if not self.game.is_active:

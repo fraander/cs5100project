@@ -17,6 +17,12 @@ color_indices = {
     'yellow': 4,
 }
 
+# Open the Q-table from a file
+def read_q(file_path=None):
+    if file_path is not None:
+        with open(file_path, "rb") as file:
+            return pickle.load(file)
+    return None
 
 def hash(obs) -> int:
     # unpack observation
@@ -140,6 +146,7 @@ def test_table(q, num_episodes=1000):
 
     return avg_reward / num_episodes, wins, loses
 
+
 def avg_score(Q):
     actions = [0] * NUM_ACTIONS
     taz = 0
@@ -152,17 +159,19 @@ def avg_score(Q):
         taz += 1 if az else 0
     return [round(a/len(Q.keys()),2) for a in actions], taz
 
+def Q_learning(gamma=0.9, epsilon=1, decay=0.999, q_path=None):
 
-
-def Q_learning(gamma=0.9, epsilon=1, decay=0.999):
-    
     start = datetime.now()
     checkpoint = datetime.now()
     logging = []
     episode = 0
-    Q = {}
-    for i in range(15360):
-        Q[i] = np.zeros(NUM_ACTIONS)
+
+    loaded = read_q(q_path)
+    Q = loaded if loaded is not None else {}
+
+    if loaded is None:
+        for i in range(15360):
+            Q[i] = np.zeros(NUM_ACTIONS)
     num_updates = np.zeros((15360, NUM_ACTIONS))
 
     while datetime.now() < start + timedelta(minutes=520):
@@ -219,7 +228,8 @@ def Q_learning(gamma=0.9, epsilon=1, decay=0.999):
 
 decay_rate = 0.99
 
-Q_table, logs = Q_learning(gamma=0.9, epsilon=1, decay=decay_rate)  # Run Q-learning
+# Give the file path of the Q_table.pickle to load an existing Q_table
+Q_table, logs = Q_learning(gamma=0.9, epsilon=1, decay=decay_rate, q_path=None)  # Run Q-learning
 # Q_table = Q_learning(num_episodes=10000, gamma=0.9, epsilon=1, decay_rate=decay_rate) # Run Q-learning
 
 with open('logs3.18.csv', 'w', newline='') as file:
@@ -229,6 +239,8 @@ with open('logs3.18.csv', 'w', newline='') as file:
 # Save the Q-table dict to a file
 with open('Q_table.pickle', 'wb') as handle:
     pickle.dump(Q_table, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+
 
 '''
 Uncomment the code below to play an episode using the saved Q-table. Useful for debugging/visualization.

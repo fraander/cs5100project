@@ -105,8 +105,8 @@ class TrainingEnvironment:
             if filter_fn(card, current):
                 if move < 5 and card.color == 'black':
                     continue
-                if card.card_type in ["+4", "+2", "skip", "reverse"]:  
-                    return idx  # Prioritize action cards
+                if card.card_type in ["+2"]:  
+                    return idx  # Prioritize only the +2 action card 
                 best_card = idx  
         return best_card  # Play normal card only if no action cards available
 

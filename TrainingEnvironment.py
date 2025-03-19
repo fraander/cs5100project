@@ -73,30 +73,34 @@ class TrainingEnvironment:
         return card.card_type == 'reverse' and current.playable(card)
 
     @staticmethod
-    def play_black(card, current):
-        return card.color == 'black' and current.playable(card)
+    def play_draw_two(card, current):
+        return card.card_type == '+2' and current.playable(card)
+
+    @staticmethod
+    def play_draw_four(card, current):
+        return card.card_type == '+4' and current.playable(card)
+
+    @staticmethod
+    def play_wild(card, current):
+        return card.card_type == 'wildcard' and current.playable(card)
 
     # Moves are:
     # 1 - play the matching color
     # 2 - play the matching number
-    # 3 - play the matching color and number
-    # 4 - play a skip
-    # 5 - play a reverse
-    # 6 - play a black card, change color to RED
-    # 7 - play a black card, change color to GREEN
-    # 8 - play a black card, change color to YELLOW
-    # 9 - play a black card, change color to BLUE
+    # 3 - play a skip
+    # 4 - play a reverse
+    # 5 - play a draw 2
+    # 6 - play a draw 4
+    # 7 - play a wildcard
     def get_move_filter(self, move):
         move_mapping = {
             1: (matching_color, None),
             2: (self.matching_number, None),
             3: (self.play_skip, None),
             4: (self.play_reverse, None),
-            5: (self.play_black, None),
-            6: (self.play_black, 'red'),
-            7: (self.play_black, 'green'),
-            8: (self.play_black, 'blue'),
-            9: (self.play_black, 'yellow'),
+            5: (self.play_draw_two, None),
+            6: (self.play_draw_four, None),
+            7: (self.play_wild, None),
         }
         return move_mapping.get(move, (None, None))
 

@@ -7,7 +7,7 @@ import numpy as np
 from TrainingEnvironment import TrainingEnvironment
 
 env = TrainingEnvironment()
-NUM_ACTIONS = 9
+NUM_ACTIONS = 7
 
 color_indices = {
     'none': 0,

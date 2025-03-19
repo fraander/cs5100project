@@ -155,17 +155,18 @@ def avg_score(Q):
 
 
 def Q_learning(gamma=0.9, epsilon=1, decay=0.999):
+    
     start = datetime.now()
     checkpoint = datetime.now()
     logging = []
     episode = 0
     Q = {}
-    for i in range(12289):
+    for i in range(15360):
         Q[i] = np.zeros(NUM_ACTIONS)
-    num_updates = np.zeros((12289, NUM_ACTIONS))
+    num_updates = np.zeros((15360, NUM_ACTIONS))
 
     while datetime.now() < start + timedelta(minutes=520):
-
+        print(episode)
         if datetime.now() > checkpoint + timedelta(minutes=5):
             print("{} out of ?? episodes. The Q table has {} entries, the exploration rate is {}".format(episode,
                                                                                                          len(Q.keys()),
@@ -193,6 +194,7 @@ def Q_learning(gamma=0.9, epsilon=1, decay=0.999):
         moves = 0
 
         while not done:
+
             hs = hash(obs)
 
             if np.random.random() > epsilon:
@@ -215,7 +217,7 @@ def Q_learning(gamma=0.9, epsilon=1, decay=0.999):
     return Q, logging
 
 
-decay_rate = 0.95
+decay_rate = 0.99
 
 Q_table, logs = Q_learning(gamma=0.9, epsilon=1, decay=decay_rate)  # Run Q-learning
 # Q_table = Q_learning(num_episodes=10000, gamma=0.9, epsilon=1, decay_rate=decay_rate) # Run Q-learning

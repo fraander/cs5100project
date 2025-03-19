@@ -1,14 +1,10 @@
 import numpy as np
 
 from RandomPlayer import RandomPlayer
-from uno import UnoGame
+from uno import UnoGame, COLORS
 
 
 # TODO: Rahul, update action space to match `todo.md`
-
-def matching_color(card, current):
-    return (card.color == current.color or current.color == 'black') and current.playable(card)
-
 
 class TrainingEnvironment:
     num_players = 3
@@ -61,8 +57,13 @@ class TrainingEnvironment:
     def matching_number(card, current):
         return (card.card_type == current.card_type or current.color == 'black') and current.playable(card)
 
+    @staticmethod
     def matching_color_and_number(self, card, current):
-        return matching_color(card, current) and self.matching_number(card, current)
+        return TrainingEnvironment.matching_color(card, current) and self.matching_number(card, current)
+    
+    @staticmethod
+    def matching_color(card, current):
+        return (card.color == current.color or current.color == 'black') and current.playable(card)
 
     @staticmethod
     def play_skip(card, current):
@@ -94,15 +95,15 @@ class TrainingEnvironment:
     # 7 - play a wildcard
     def get_move_filter(self, move):
         move_mapping = {
-            1: (matching_color, None),
-            2: (self.matching_number, None),
-            3: (self.play_skip, None),
-            4: (self.play_reverse, None),
-            5: (self.play_draw_two, None),
-            6: (self.play_draw_four, None),
-            7: (self.play_wild, None),
+            1: self.matching_color,
+            2: self.matching_number,
+            3: self.play_skip,
+            4: self.play_reverse,
+            5: self.play_draw_two,
+            6: self.play_draw_four,
+            7: self.play_wild,
         }
-        return move_mapping.get(move, (None, None))
+        return move_mapping.get(move, None)
 
     @staticmethod
     def choose_card_index(hand, current, filter_fn, move):
@@ -134,7 +135,7 @@ class TrainingEnvironment:
         current = self.game.current_card
 
         # Get the filtering function and intended new color for the move
-        filter_fn, intended_color = self.get_move_filter(move)
+        filter_fn = self.get_move_filter(move)
         if filter_fn is None:
             obs = {"hand": hand, "current_card": current, "history": self.game.history, "player_number": self.player_number, "direction": self.game._player_cycle._reverse}
             reward = self.rewards['wrong_card']
@@ -151,7 +152,7 @@ class TrainingEnvironment:
 
         # Attempt to play the selected card
         try:
-            self.game.play(player=self.player_number, card=card_index, new_color=intended_color)
+            self.game.play(player=self.player_number, card=card_index, new_color=np.random.choice(COLORS))
         except ValueError:
             obs = {"hand": hand, "current_card": current, "history": self.game.history, "player_number": self.player_number, "direction": self.game._player_cycle._reverse}
             reward = self.rewards['wrong_card']

@@ -15,8 +15,6 @@ color_indices = {
 }
 
 
-# TODO: Frank, update hash function to match `todo.md`
-
 def hash(obs) -> int:
     # unpack observation
     current, hand, history, player_num, direction = obs['current_card'], obs['hand'], obs['history'], obs['player_number'], obs['direction']

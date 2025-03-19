@@ -95,13 +95,13 @@ class TrainingEnvironment:
     # 7 - play a wildcard
     def get_move_filter(self, move):
         move_mapping = {
-            1: self.matching_color,
-            2: self.matching_number,
-            3: self.play_skip,
-            4: self.play_reverse,
-            5: self.play_draw_two,
-            6: self.play_draw_four,
-            7: self.play_wild,
+            0: self.matching_color,
+            1: self.matching_number,
+            2: self.play_skip,
+            3: self.play_reverse,
+            4: self.play_draw_two,
+            5: self.play_draw_four,
+            6: self.play_wild,
         }
         return move_mapping.get(move, None)
 
@@ -131,12 +131,14 @@ class TrainingEnvironment:
                 self.game.play(player=player_id, card=None)
 
     def move(self, move):
+        #print("Move", move)
         hand = self.game.current_player.hand
         current = self.game.current_card
 
         # Get the filtering function and intended new color for the move
         filter_fn = self.get_move_filter(move)
         if filter_fn is None:
+            #print("Thats not an action")
             obs = {"hand": hand, "current_card": current, "history": self.game.history, "player_number": self.player_number, "direction": self.game._player_cycle._reverse}
             reward = self.rewards['wrong_card']
             done = not self.game.is_active
@@ -145,6 +147,7 @@ class TrainingEnvironment:
         # Choose a legal card index based on the filter
         card_index = self.choose_card_index(hand, current, filter_fn, move)
         if card_index is None:
+            #print("No matching card")
             obs = {"hand": hand, "current_card": current, "history": self.game.history, "player_number": self.player_number, "direction": self.game._player_cycle._reverse}
             reward = self.rewards['wrong_card']
             done = not self.game.is_active
@@ -154,6 +157,7 @@ class TrainingEnvironment:
         try:
             self.game.play(player=self.player_number, card=card_index, new_color=np.random.choice(COLORS))
         except ValueError:
+            #print("Error when playing card")
             obs = {"hand": hand, "current_card": current, "history": self.game.history, "player_number": self.player_number, "direction": self.game._player_cycle._reverse}
             reward = self.rewards['wrong_card']
             done = not self.game.is_active

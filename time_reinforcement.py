@@ -160,18 +160,21 @@ def avg_score(Q):
     return [round(a/len(Q.keys()),2) for a in actions], taz
 
 
-def Q_learning(gamma=0.9, epsilon=1, decay=0.999, q_path=None):
+def Q_learning(gamma=0.9, epsilon=1, decay=0.999, q_path=None, u_path=None):
     start = datetime.now()
     checkpoint = datetime.now()
     logging = []
     episode = 0
 
-    loaded = read_q(q_path)
-    Q = loaded if loaded is not None else {}
+    # use Q if given, otherwise default
+    q_loaded = read_q(q_path)
+    Q = q_loaded if q_loaded is not None else {}
 
+    # use updates if given, otherwise default
+    u_loaded = read_q(u_path)
     for i in range(12289):
         Q[i] = np.zeros(NUM_ACTIONS)
-    num_updates = np.zeros((12289, NUM_ACTIONS))
+    num_updates = u_loaded if u_loaded is not None else np.zeros((12289, NUM_ACTIONS))
 
     while datetime.now() < start + timedelta(minutes=520):
 
@@ -221,13 +224,13 @@ def Q_learning(gamma=0.9, epsilon=1, decay=0.999, q_path=None):
         episode += 1
         # print("That game had {} steps and ended with result {}".format(moves, reward))
 
-    return Q, logging
+    return Q, num_updates, logging
 
 
 decay_rate = 0.95
 
 # Give the file path of the Q_table.pickle to load an existing Q_table
-Q_table, logs = Q_learning(gamma=0.9, epsilon=1, decay=decay_rate, q_path=None)  # Run Q-learning
+Q_table, num_updates, logs = Q_learning(gamma=0.9, epsilon=1, decay=decay_rate, q_path=None, u_path=None)  # Run Q-learning
 # Q_table = Q_learning(num_episodes=10000, gamma=0.9, epsilon=1, decay_rate=decay_rate) # Run Q-learning
 
 with open('logs3.18.csv', 'w', newline='') as file:
@@ -237,6 +240,10 @@ with open('logs3.18.csv', 'w', newline='') as file:
 # Save the Q-table dict to a file
 with open('Q_table.pickle', 'wb') as handle:
     pickle.dump(Q_table, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+# Save the Q-table dict to a file
+with open('num_updates.pickle', 'wb') as handle:
+    pickle.dump(num_updates, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 

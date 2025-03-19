@@ -44,16 +44,6 @@ class TrainingEnvironment:
     "hand": self.game.current_player.hand,
     "current_card": self.game.current_card,
     "history": self.game.history,
-    "player_number": self.player_number,
-    "cards_p1": len(self.game.players[0].hand),
-    "cards_p2": len(self.game.players[1].hand),
-    "cards_p3": len(self.game.players[2].hand),
-    "last_color_p1": self.game.players[0].last_color,
-    "last_color_p2": self.game.players[1].last_color,
-    "last_color_p3": self.game.players[2].last_color,
-    "last_number_p1": self.game.players[0].last_number,
-    "last_number_p2": self.game.players[1].last_number,
-    "last_number_p3": self.game.players[2].last_number,
     "direction": self.game.direction,
 }
 
@@ -170,15 +160,6 @@ class TrainingEnvironment:
     "hand": self.game.current_player.hand,
     "current_card": self.game.current_card,
     "history": self.game.history,
-    "cards_p1": len(self.game.players[0].hand),
-    "cards_p2": len(self.game.players[1].hand),
-    "cards_p3": len(self.game.players[2].hand),
-    "last_color_p1": self.game.players[0].last_color,
-    "last_color_p2": self.game.players[1].last_color,
-    "last_color_p3": self.game.players[2].last_color,
-    "last_number_p1": self.game.players[0].last_number,
-    "last_number_p2": self.game.players[1].last_number,
-    "last_number_p3": self.game.players[2].last_number,
     "direction": self.game.direction,
 }
 

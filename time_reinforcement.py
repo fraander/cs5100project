@@ -1,13 +1,15 @@
 import pickle
-import random
 from datetime import datetime, timedelta
 import csv
-
 import numpy as np
+
 from TrainingEnvironment import TrainingEnvironment
 
 env = TrainingEnvironment()
 NUM_ACTIONS = 7
+
+LOGS = "./logs/logs3.20.csv"
+PICKLE = "./pickles/pickle3.20.csv"
 
 color_indices = {
     'none': 0,
@@ -59,7 +61,7 @@ def hash(obs) -> int:
 
     # find the most recent play by the player before the most recent 'draw' that isn't 'black'
     cw_found_draw = False
-    cw_last_draw_color = 0 # random.choice(list(color_indices.values()))
+    cw_last_draw_color = 'none' # random.choice(list(color_indices.values()))
     for h in reversed(history):
         if h['player'] == cw_num and h['action'] == 'draw':
             cw_found_draw = True
@@ -68,19 +70,19 @@ def hash(obs) -> int:
             break
 
     acw_found_draw = False
-    acw_last_draw_color = 0 # random.choice(list(color_indices.values()))
+    acw_last_draw_color = 'none' # random.choice(list(color_indices.values()))
     for h in reversed(history):
         if h['player'] == acw_num and h['action'] == 'draw':
             acw_found_draw = True
         elif acw_found_draw and h['action'] == 'play' and h['played_card'].color != "black":
-            acw_last_draw_color = color_indices[h['played_card'].color]
+            acw_last_draw_color = h['played_card'].color
             break
 
     # based on direction of play, use cw or acw and next and next next
-    next_last_draw_color = cw_last_draw_color == 1 if direction_of_play == 'cw' else acw_last_draw_color == 1
-    next_next_last_draw_color = acw_last_draw_color == 1 if direction_of_play == 'acw' else acw_last_draw_color == 1
+    next_last_draw_color = color_indices[cw_last_draw_color if direction_of_play == 'cw' else acw_last_draw_color]
+    next_next_last_draw_color = color_indices[acw_last_draw_color if direction_of_play == 'acw' else acw_last_draw_color]
     
-    if next_last_draw_color > 4:
+    if next_next_last_draw_color > 4:
         print('next_last_draw_color bad')
     if next_last_draw_color > 4:
         print('next_last_draw_color bad')
@@ -106,15 +108,15 @@ def hash(obs) -> int:
     # convert matches to index and return
     return (next_next_last_draw_color
             + 5 * next_last_draw_color
-            + 5 * 4 * next_next_uno
-            + 5 * 4 * 2 * next_uno
-            + 5 * 4 * 2 * 2 * draw_4
-            + 5 * 4 * 2 * 2 * 2 * wild
-            + 5 * 4 * 2 * 2 * 2 * 2 * match_reverse
-            + 5 * 4 * 2 * 2 * 2 * 2 * 2 * match_skip
-            + 5 * 4 * 2 * 2 * 2 * 2 * 2 * 2 * match_draw_2
-            + 5 * 4 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * match_color
-            + 5 * 4 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 3 * match_num)
+            + 5 * 5 * (1 if next_next_uno else 0)
+            + 5 * 5 * 2 * (1 if next_uno else 0)
+            + 5 * 5 * 2 * 2 * draw_4
+            + 5 * 5 * 2 * 2 * 2 * wild
+            + 5 * 5 * 2 * 2 * 2 * 2 * match_reverse
+            + 5 * 5 * 2 * 2 * 2 * 2 * 2 * match_skip
+            + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * match_draw_2
+            + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * match_color
+            + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 3 * match_num)
 
 
 def test_table(q, num_episodes=1000):
@@ -124,6 +126,8 @@ def test_table(q, num_episodes=1000):
     avg_reward = 0
     wins = 0
     loses = 0
+    illegal_moves = 0
+    legal_moves = 0
 
     for _ in range(num_episodes):
 
@@ -138,12 +142,17 @@ def test_table(q, num_episodes=1000):
             steps += 1
 
             avg_reward += reward
+            if reward == -10:
+                illegal_moves += 1
+            if reward == 10 or reward == 500 or reward == 100:
+                legal_moves += 1
 
         if reward == 10000:
             wins += 1
         elif reward == -10000:
             loses += 1
 
+    print("The table made {} legal and {} illegal moves".format(legal_moves, illegal_moves))
     return avg_reward / num_episodes, wins, loses
 
 
@@ -151,12 +160,12 @@ def avg_score(Q):
     actions = [0] * NUM_ACTIONS
     taz = 0
     for i in Q.keys():
-        az = True
+        all_zero = True
         for action in range(NUM_ACTIONS):
             actions[action] += Q[i][action]
             if Q[i][action] != 0:
-                az = False
-        taz += 1 if az else 0
+                all_zero = False
+        taz += 1 if all_zero else 0
     return [round(a/len(Q.keys()),2) for a in actions], taz
 
 def Q_learning(gamma=0.9, epsilon=1, decay=0.999, q_path=None):
@@ -164,23 +173,25 @@ def Q_learning(gamma=0.9, epsilon=1, decay=0.999, q_path=None):
     start = datetime.now()
     checkpoint = datetime.now()
     logging = []
+    unique_states = set()
     episode = 0
 
     loaded = read_q(q_path)
     Q = loaded if loaded is not None else {}
 
     if loaded is None:
-        for i in range(15360):
+        for i in range(19201):
             Q[i] = np.zeros(NUM_ACTIONS)
-    num_updates = np.zeros((15360, NUM_ACTIONS))
+    num_updates = np.zeros((19201, NUM_ACTIONS))
 
-    while datetime.now() < start + timedelta(minutes=530):
+    while datetime.now() < start + timedelta(minutes=5):
         
-        if datetime.now() > checkpoint + timedelta(minutes=5):
-            print("{} out of ?? episodes. The Q table has {} entries, the exploration rate is {}".format(episode,
-                                                                                                         len(Q.keys()),
-                                                                                                         epsilon))
-            avg, wins, loses = test_table(Q, 10000)
+        if datetime.now() > checkpoint + timedelta(seconds=60):
+            print("{} out of ?? episodes. The Q table has {} entries and has seen {} unique states, the exploration rate is {}".format(episode, 
+                                                                                                                                       len(Q.keys()),
+                                                                                                                                       len(unique_states), 
+                                                                                                                                       epsilon))
+            avg, wins, loses = test_table(Q, 100)
             print("The Q_Table got an average reward of {} with {} wins and {} loses for a win percentage of {}".format(
                 avg, wins, loses, wins / (wins + loses) if wins + loses > 0 else 0))
             avg_scores, taz = avg_score(Q)
@@ -191,12 +202,12 @@ def Q_learning(gamma=0.9, epsilon=1, decay=0.999, q_path=None):
                 logging[-1].append(i)
             checkpoint = datetime.now()
             epsilon *= decay
-            with open('/logs/logs3.18.csv', 'w', newline='') as file:
+            with open(LOGS, 'w', newline='') as file:
                 csvwriter = csv.writer(file)
                 csvwriter.writerows(logging)
 
             # Save the Q-table dict to a file
-            with open('/pickles/Q_table.pickle', 'wb') as handle:
+            with open(PICKLE, 'wb') as handle:
                 pickle.dump(Q, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
         obs, reward, done = env.reset()
@@ -205,6 +216,8 @@ def Q_learning(gamma=0.9, epsilon=1, decay=0.999, q_path=None):
         while not done:
 
             hs = hash(obs)
+
+            unique_states.add(hs)
 
             if np.random.random() > epsilon:
                 action = np.argmax(Q[hs])
@@ -232,12 +245,12 @@ decay_rate = 0.99
 Q_table, logs = Q_learning(gamma=0.9, epsilon=1, decay=decay_rate, q_path=None)  # Run Q-learning
 # Q_table = Q_learning(num_episodes=10000, gamma=0.9, epsilon=1, decay_rate=decay_rate) # Run Q-learning
 
-with open('/logs/logs3.18.csv', 'w', newline='') as file:
+with open(LOGS, 'w', newline='') as file:
     csvwriter = csv.writer(file)
     csvwriter.writerows(logs)
 
 # Save the Q-table dict to a file
-with open('/pickles/Q_table.pickle', 'wb') as handle:
+with open(PICKLE, 'wb') as handle:
     pickle.dump(Q_table, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 

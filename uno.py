@@ -279,7 +279,7 @@ class UnoGame:
         """
         penalty_cards = [self.deck.pop(0) for i in range(n)]
         player.hand.extend(penalty_cards)
-        self.history.append({"player": player, "action": 'draw', "num_cards": n})
+        self.history.append({"player": player.player_id, "action": 'draw', "num_cards": n})
 
 
 class ReversibleCycle:

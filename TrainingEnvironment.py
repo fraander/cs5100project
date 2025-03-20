@@ -11,7 +11,7 @@ class TrainingEnvironment:
 
     rewards = {
         'play_card': 10,
-        'wrong_card': 0,
+        'wrong_card': -10,
         'two_left': 100,
         'uno': 500,
         'win': 10000,
@@ -175,11 +175,17 @@ class TrainingEnvironment:
             "direction": self.game._player_cycle._reverse,
         }
 
-        reward = 0
         if not self.game.is_active:
             if self.game.winner.player_id == self.player_number:
                 reward = self.rewards['win']
             else:
                 reward = self.rewards['lose']
+        else:
+            if len(self.game.current_player.hand) == 1:
+                reward = self.rewards['uno']
+            elif len(self.game.current_player.hand) == 2:
+                reward = self.rewards['two_left']
+            else:
+                reward = self.rewards['play_card']
         done = not self.game.is_active
         return obs, reward, done

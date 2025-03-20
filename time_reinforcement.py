@@ -174,8 +174,8 @@ def Q_learning(gamma=0.9, epsilon=1, decay=0.999, q_path=None):
             Q[i] = np.zeros(NUM_ACTIONS)
     num_updates = np.zeros((15360, NUM_ACTIONS))
 
-    while datetime.now() < start + timedelta(minutes=520):
-        print(episode)
+    while datetime.now() < start + timedelta(minutes=530):
+        
         if datetime.now() > checkpoint + timedelta(minutes=5):
             print("{} out of ?? episodes. The Q table has {} entries, the exploration rate is {}".format(episode,
                                                                                                          len(Q.keys()),
@@ -221,7 +221,7 @@ def Q_learning(gamma=0.9, epsilon=1, decay=0.999, q_path=None):
             num_updates[hs, action] += 1
 
         episode += 1
-        # print("That game had {} steps and ended with result {}".format(moves, reward))
+        #print("That game had {} steps and ended with result {}".format(moves, reward))
 
     return Q, logging
 

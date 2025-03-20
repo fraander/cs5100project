@@ -6,3 +6,7 @@
 __pycache__/
 /__pycache__
 __pycache__/TrainingEnvironment.cpython-312.pyc
+
+# Ignore logs and pickles
+/logs
+/pickles

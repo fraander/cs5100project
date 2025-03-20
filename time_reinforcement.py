@@ -191,12 +191,12 @@ def Q_learning(gamma=0.9, epsilon=1, decay=0.999, q_path=None):
                 logging[-1].append(i)
             checkpoint = datetime.now()
             epsilon *= decay
-            with open('logs3.18.csv', 'w', newline='') as file:
+            with open('/logs/logs3.18.csv', 'w', newline='') as file:
                 csvwriter = csv.writer(file)
                 csvwriter.writerows(logging)
 
             # Save the Q-table dict to a file
-            with open('Q_table.pickle', 'wb') as handle:
+            with open('/pickles/Q_table.pickle', 'wb') as handle:
                 pickle.dump(Q, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
         obs, reward, done = env.reset()
@@ -232,12 +232,12 @@ decay_rate = 0.99
 Q_table, logs = Q_learning(gamma=0.9, epsilon=1, decay=decay_rate, q_path=None)  # Run Q-learning
 # Q_table = Q_learning(num_episodes=10000, gamma=0.9, epsilon=1, decay_rate=decay_rate) # Run Q-learning
 
-with open('logs3.18.csv', 'w', newline='') as file:
+with open('/logs/logs3.18.csv', 'w', newline='') as file:
     csvwriter = csv.writer(file)
     csvwriter.writerows(logs)
 
 # Save the Q-table dict to a file
-with open('Q_table.pickle', 'wb') as handle:
+with open('/pickles/Q_table.pickle', 'wb') as handle:
     pickle.dump(Q_table, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 

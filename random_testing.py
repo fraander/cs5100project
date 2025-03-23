@@ -8,8 +8,8 @@ from TrainingEnvironment import TrainingEnvironment
 env = TrainingEnvironment()
 NUM_ACTIONS = 7
 
-LOGS = "./logs/logs3.22.csv"
-PICKLE = "./pickles/pickle3.22.pickle"
+LOGS = "./logs/throwaway.csv"
+uniques_vals = [set() for i in range(11)]
 
 color_indices = {
     'none': 0,
@@ -18,13 +18,6 @@ color_indices = {
     'green': 3,
     'yellow': 4,
 }
-
-# Open the Q-table from a file
-def read_q(file_path=None):
-    if file_path is not None:
-        with open(file_path, "rb") as file:
-            return pickle.load(file)
-    return None
 
 def hash(obs) -> int:
     # unpack observation
@@ -81,6 +74,18 @@ def hash(obs) -> int:
     # based on direction of play, use cw or acw and next and next next
     next_last_draw_color = color_indices[cw_last_draw_color if direction_of_play == 'cw' else acw_last_draw_color]
     next_next_last_draw_color = color_indices[acw_last_draw_color if direction_of_play == 'cw' else cw_last_draw_color]
+
+    uniques_vals[0].add(next_next_last_draw_color)
+    uniques_vals[1].add(next_last_draw_color)
+    uniques_vals[2].add(next_next_uno)
+    uniques_vals[3].add(next_uno)
+    uniques_vals[4].add(draw_4)
+    uniques_vals[5].add(wild)
+    uniques_vals[6].add(match_reverse)
+    uniques_vals[7].add(match_skip)
+    uniques_vals[8].add(match_draw_2)
+    uniques_vals[9].add(match_color)
+    uniques_vals[10].add(match_num)
     
     if next_next_last_draw_color > 4:
         print('next_last_draw_color bad')
@@ -118,97 +123,22 @@ def hash(obs) -> int:
             + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * match_color
             + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 3 * match_num)
 
+def test_and_log(num_episodes):
 
-def test_table(q, num_episodes=1000):
-    """
-    Runs 1000 games, checks wins vs loses
-    """
-    avg_reward = 0
-    wins = 0
-    loses = 0
-    illegal_moves = 0
-    legal_moves = 0
-
-    for _ in range(num_episodes):
-
-        obs, reward, done = env.reset()
-        steps = 0
-
-        while done == False and steps < 100:
-            hs = hash(obs)
-
-            action = np.argmax(q[hs])
-            obs, reward, done = env.move(action)
-            steps += 1
-
-            avg_reward += reward
-            if reward == -50000:
-                illegal_moves += 1
-            if reward == 10 or reward == 500 or reward == 100 or reward == 10000:
-                legal_moves += 1
-
-        if reward == 10000:
-            wins += 1
-        elif reward == -10000:
-            loses += 1
-
-    print("The table made {} legal and {} illegal moves".format(legal_moves, illegal_moves))
-    return avg_reward / num_episodes, wins, loses, legal_moves, illegal_moves
-
-
-def avg_score(Q):
-    actions = [0] * NUM_ACTIONS
-    taz = 0
-    for i in Q.keys():
-        all_zero = True
-        for action in range(NUM_ACTIONS):
-            actions[action] += Q[i][action]
-            if Q[i][action] != 0:
-                all_zero = False
-        taz += 1 if all_zero else 0
-    return [round(a/len(Q.keys()),2) for a in actions], taz
-
-def Q_learning(gamma=0.9, epsilon=1, decay=0.999, q_path=None):
-
-    start = datetime.now()
-    checkpoint = datetime.now()
     logging = []
     unique_states = set()
     episode = 0
+    wins = 0
+    loses = 0
+    legal = 0
+    illegal = 0
+    avg_reward = 0
 
-    loaded = read_q(q_path)
-    Q = loaded if loaded is not None else {}
-
-    if loaded is None:
-        for i in range(19201):
-            Q[i] = np.zeros(NUM_ACTIONS)
-    num_updates = np.zeros((19201, NUM_ACTIONS))
-
-    while datetime.now() < start + timedelta(minutes=750):
+    while episode < num_episodes:
         
-        if datetime.now() > checkpoint + timedelta(minutes=5):
-            print("{} out of ?? episodes. The Q table has {} entries and has seen {} unique states, the exploration rate is {}".format(episode, 
-                                                                                                                                       len(Q.keys()),
-                                                                                                                                       len(unique_states), 
-                                                                                                                                       epsilon))
-            avg, wins, loses, legal, illegal = test_table(Q, 10000)
-            print("The Q_Table got an average reward of {} with {} wins and {} loses for a win percentage of {}".format(
-                avg, wins, loses, wins / (wins + loses) if wins + loses > 0 else 0))
-            avg_scores, taz = avg_score(Q)
-            print("Average Q score for each action: {}. There are {} states with no scores".format(avg_scores, taz))
-            print()
-            logging.append([datetime.now(), episode, epsilon, len(unique_states), legal, illegal, legal / (legal + illegal) if legal + illegal > 0 else 0, avg, wins, loses, wins / (wins + loses) if wins + loses > 0 else 0, taz])
-            for i in avg_scores:
-                logging[-1].append(i)
-            checkpoint = datetime.now()
-            epsilon *= decay
-            with open(LOGS, 'w', newline='') as file:
-                csvwriter = csv.writer(file)
-                csvwriter.writerows(logging)
-
-            # Save the Q-table dict to a file
-            with open(PICKLE, 'wb') as handle:
-                pickle.dump(Q, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        if episode % 5000 == 0:
+            print("yurrr")
+            logging.append([datetime.now(), episode, 0, len(unique_states), legal, illegal, legal/(legal + illegal) if legal + illegal > 0 else 0, wins, loses, wins / (wins + loses) if wins + loses > 0 else 0, avg_reward])
 
         obs, reward, done = env.reset()
         moves = 0
@@ -219,57 +149,40 @@ def Q_learning(gamma=0.9, epsilon=1, decay=0.999, q_path=None):
 
             unique_states.add(hs)
 
-            if np.random.random() > epsilon:
-                action = np.argmax(Q[hs])
-            else:
-                action = np.random.randint(0, NUM_ACTIONS)
+            action = np.random.randint(0, NUM_ACTIONS)
 
             obs, reward, done = env.move(action)
             moves += 1
 
-            eta = 1 / (1 + num_updates[hs, action])
-            newQ = ((1 - eta) * Q[hs][action]) + (eta * (reward + (gamma * np.max(Q[hash(obs)]))))
+            avg_reward += reward
+            if reward == -10:
+                illegal += 1
+            if reward == 10 or reward == 500 or reward == 100 or reward == 10000:
+                legal += 1
 
-            Q[hs][action] = newQ
-            num_updates[hs, action] += 1
+        if reward == 10000:
+            wins += 1
+        elif reward == -10000:
+            loses += 1
 
         episode += 1
         #print("That game had {} steps and ended with result {}".format(moves, reward))
 
-    return Q, logging
+    return logging
 
 
-decay_rate = 0.99
+# decay_rate = 0.99
 
-# Give the file path of the Q_table.pickle to load an existing Q_table
-Q_table, logs = Q_learning(gamma=0.9, epsilon=1, decay=decay_rate, q_path=None)  # Run Q-learning
-# Q_table = Q_learning(num_episodes=10000, gamma=0.9, epsilon=1, decay_rate=decay_rate) # Run Q-learning
+# # Give the file path of the Q_table.pickle to load an existing Q_table
+logs = test_and_log(500000)
+for i in uniques_vals:
+    print(i)
+# # Q_table = Q_learning(num_episodes=10000, gamma=0.9, epsilon=1, decay_rate=decay_rate) # Run Q-learning
 
 with open(LOGS, 'w', newline='') as file:
     csvwriter = csv.writer(file)
     csvwriter.writerows(logs)
 
-# Save the Q-table dict to a file
-with open(PICKLE, 'wb') as handle:
-    pickle.dump(Q_table, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-
-
-'''
-Uncomment the code below to play an episode using the saved Q-table. Useful for debugging/visualization.
-'''
-
-# obs, reward, done, info = env.reset()
-# total_reward = 0
-# while not done:
-# 	state = hash(obs)
-# 	action = np.argmax(Q_table[state])
-# 	obs, reward, done, info = env.step(action)
-# 	total_reward += reward
-# 	if gui_flag:
-# 		refresh(obs, reward, done, info)  # Update the game screen [GUI only]
-
-# print("Total reward:", total_reward)
-
-# # Close the
-# env.close() # Close the environment
+# # Save the Q-table dict to a file
+# with open(PICKLE, 'wb') as handle:
+#     pickle.dump(Q_table, handle, protocol=pickle.HIGHEST_PROTOCOL)

@@ -11,7 +11,7 @@ class TrainingEnvironment:
 
     rewards = {
         'play_card': 10,
-        'wrong_card': -10,
+        'wrong_card': -50000,
         'two_left': 100,
         'uno': 500,
         'win': 10000,

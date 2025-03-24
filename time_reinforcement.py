@@ -6,10 +6,11 @@ import numpy as np
 from TrainingEnvironment import TrainingEnvironment
 
 env = TrainingEnvironment()
-NUM_ACTIONS = 7
+NUM_ACTIONS = 13
+NUM_STATES = 76801
 
-LOGS = "./logs/logs3.22.csv"
-PICKLE = "./pickles/pickle3.22.pickle"
+LOGS = "./logs/logs3.23.csv"
+PICKLE = "./pickles/pickle3.23.pickle"
 
 color_indices = {
     'none': 0,
@@ -30,13 +31,19 @@ def hash(obs) -> int:
     # unpack observation
     current, hand, history, player_num, direction = obs['current_card'], obs['hand'], obs['history'], obs['player_number'], obs['direction']
 
+    my_cols = [0,0,0,0]
+    for i in hand:
+        if i.color != 'black':
+            my_cols[color_indices[i.color]-1] += 1
+    hand_max_color = np.argmax(my_cols)
+
     # calculate competitor ids
     cw_num = (player_num - 1) % 3
     acw_num = (player_num + 1) % 3
 
     # calculate each match
     match_num = 1 if any([c.card_type == current.card_type for c in hand]) else 0 # any card matches current card type
-    match_color = min(2, len([c for c in hand if c.color == current.color])) # any card matches current card color
+    match_color = min(2, len([c for c in hand if c.color == current.color and c.card_type not in ['skip', 'reverse', '+2']])) # any card matches current card color
 
     wild = 1 if any(c.card_type == 'wildcard' for c in hand) else 0 # any wildcard in hand
     draw_4 = 1 if any(c.card_type == '+4' for c in hand) else 0 # any +4 in hand
@@ -57,7 +64,7 @@ def hash(obs) -> int:
 
     # based on direction of play, use cw or acw and next and next next
     next_uno = cw_hand_size == 1 if direction_of_play == 'cw' else acw_hand_size == 1
-    next_next_uno = acw_hand_size == 1 if direction_of_play == 'acw' else cw_hand_size == 1
+    next_next_uno = acw_hand_size == 1 if direction_of_play == 'cw' else cw_hand_size == 1
 
     # find the most recent play by the player before the most recent 'draw' that isn't 'black'
     cw_found_draw = False
@@ -104,6 +111,8 @@ def hash(obs) -> int:
         print('match_color bad')
     if match_num> 1:
         print('match_num bad')
+    if hand_max_color > 3:
+        print("hand_max_color bad")
 
     # convert matches to index and return
     return (next_next_last_draw_color
@@ -116,7 +125,8 @@ def hash(obs) -> int:
             + 5 * 5 * 2 * 2 * 2 * 2 * 2 * match_skip
             + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * match_draw_2
             + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * match_color
-            + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 3 * match_num)
+            + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 3 * match_num
+            + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 3 * 2 * hand_max_color)
 
 
 def test_table(q, num_episodes=1000):
@@ -142,14 +152,14 @@ def test_table(q, num_episodes=1000):
             steps += 1
 
             avg_reward += reward
-            if reward == -50000:
+            if reward == TrainingEnvironment.rewards['wrong_card']:
                 illegal_moves += 1
-            if reward == 10 or reward == 500 or reward == 100 or reward == 10000:
+            else:
                 legal_moves += 1
 
-        if reward == 10000:
+        if reward == TrainingEnvironment.rewards['win']:
             wins += 1
-        elif reward == -10000:
+        elif reward == TrainingEnvironment.rewards['lose']:
             loses += 1
 
     print("The table made {} legal and {} illegal moves".format(legal_moves, illegal_moves))
@@ -180,11 +190,11 @@ def Q_learning(gamma=0.9, epsilon=1, decay=0.999, q_path=None):
     Q = loaded if loaded is not None else {}
 
     if loaded is None:
-        for i in range(19201):
+        for i in range(NUM_STATES):
             Q[i] = np.zeros(NUM_ACTIONS)
-    num_updates = np.zeros((19201, NUM_ACTIONS))
+    num_updates = np.zeros((NUM_STATES, NUM_ACTIONS))
 
-    while datetime.now() < start + timedelta(minutes=750):
+    while datetime.now() < start + timedelta(minutes=480):
         
         if datetime.now() > checkpoint + timedelta(minutes=5):
             print("{} out of ?? episodes. The Q table has {} entries and has seen {} unique states, the exploration rate is {}".format(episode, 

@@ -1,7 +1,8 @@
+import random
 import numpy as np
 
 from RandomPlayer import RandomPlayer
-from uno import UnoGame, COLORS
+from uno import UnoGame
 
 
 class TrainingEnvironment:
@@ -26,7 +27,6 @@ class TrainingEnvironment:
         7: "wild/draw_4_blue",
     }
 
-
     def reset(self):
         self.game = UnoGame(self.num_players)
         self.player_number = np.random.randint(0, self.num_players)
@@ -36,12 +36,12 @@ class TrainingEnvironment:
         self.handle_other_players()
 
         obs = {
-    "current_card": self.game.current_card,
-    "hand": self.game.current_player.hand,
-    "history": self.game.history,
-    "player_number": self.player_number,
-    "direction": self.game._player_cycle._reverse,
-}
+            "current_card": self.game.current_card,
+            "hand": self.game.current_player.hand,
+            "history": self.game.history,
+            "player_number": self.player_number,
+            "direction": self.game._player_cycle._reverse,
+        }
 
         reward = 0
         done = not self.game.is_active
@@ -51,14 +51,14 @@ class TrainingEnvironment:
     helper methods for actions
     '''
 
-    # TODO: Update these functions
     @staticmethod
     def matching_number(card, current):
         return card.card_type == current.card_type and current.playable(card)
-    
+
     @staticmethod
     def matching_color(card, current):
-        return (card.color == current.color or (current.color=="black" and card.color == current.temp_color)) and card.card_type not in ['skip', 'reverse', '+2'] and current.playable(card)
+        return (card.color == current.color or (current.color == "black" and card.color == current.temp_color)) \
+            and card.card_type not in ['skip', 'reverse', '+2'] and current.playable(card)
 
     @staticmethod
     def play_skip(card, current):
@@ -80,6 +80,53 @@ class TrainingEnvironment:
     def play_wild(card, current):
         return card.card_type == 'wildcard' and current.playable(card)
 
+    @staticmethod
+    def can_draw_2(hand, current):
+        return any([c.color == current.color and c.card_type == '+2' for c in hand])
+
+    @staticmethod
+    def can_skip(hand, current):
+        return any([c.color == current.color and c.card_type == 'skip' for c in hand])
+
+    @staticmethod
+    def can_reverse(hand, current):
+        return any([c.color == current.color and c.card_type == 'reverse' for c in hand])
+
+    @staticmethod
+    def can_wild(hand):
+        return any(c.card_type == 'wildcard' for c in hand)
+
+    @staticmethod
+    def can_draw_4(hand):
+        return any(c.card_type == '+4' for c in hand)
+
+    def play_wild_draw_4(self, card, current):
+        hand = self.game.current_player.hand  # get the current hand
+
+        # get move if valid, otherwise get None
+        wild = self.play_wild(card, current) if self.can_wild(hand) else None
+        draw_4 = self.play_draw_four(card, current) if self.can_draw_4(hand) else None
+
+        # build array of non-None moves for choosing at random
+        choices = [choice for choice in [wild, draw_4] if choice is not None]
+
+        # return a random valid choice; and try skip otherwise (since it gets rejected anyways)
+        return self.play_wild(card, current) if len(choices) == 0 else random.choice(choices)
+
+    def play_skip_reverse_draw_two(self, card, current):
+        hand = self.game.current_player.hand  # get the current hand
+
+        # get move if valid, otherwise get None
+        skip = self.play_skip(card, current) if self.can_skip(hand, current) else None
+        reverse = self.play_reverse(card, current) if self.can_reverse(hand, current) else None
+        draw_two = self.play_draw_two(card, current) if self.can_draw_2(hand, current) else None
+
+        # build array of non-None moves for choosing at random
+        choices = [choice for choice in [skip, reverse, draw_two] if choice is not None]
+
+        # return a random valid choice; and try skip otherwise (since it gets rejected anyways)
+        return self.play_skip(card, current) if len(choices) == 0 else random.choice(choices)
+
     # Moves are:
     # 1 - play the matching color
     # 2 - play the matching number
@@ -89,21 +136,14 @@ class TrainingEnvironment:
     # 6 - play a draw 4
     # 7 - play a wildcard
     def get_move_filter(self, move):
-        # TODO: Update (FRANK)
         move_mapping = {
             0: self.matching_color,
             1: self.matching_number,
-            2: self.play_skip,
-            3: self.play_reverse,
-            4: self.play_draw_two,
-            5: self.play_draw_four,
-            6: self.play_draw_four,
-            7: self.play_draw_four,
-            8: self.play_draw_four,
-            9: self.play_wild,
-            10: self.play_wild,
-            11: self.play_wild,
-            12: self.play_wild,
+            2: self.play_skip_reverse_draw_two,
+            3: self.play_wild_draw_4,
+            4: self.play_wild_draw_4,
+            5: self.play_wild_draw_4,
+            6: self.play_wild_draw_4,
         }
         return move_mapping.get(move, None)
 
@@ -112,11 +152,11 @@ class TrainingEnvironment:
         best_card = None
         for idx, card in enumerate(hand):
             if filter_fn(card, current):
-                if move < 5 and card.color == 'black':
+                if move < 3 and card.color == 'black':
                     continue
-                if card.card_type in ["+2"]:  
-                    return idx  # Prioritize only the +2 action card 
-                best_card = idx  
+                if card.card_type in ["+2"]:
+                    return idx  # Prioritize only the +2 action card
+                best_card = idx
         return best_card  # Play normal card only if no action cards available
 
     def handle_other_players(self):
@@ -133,15 +173,16 @@ class TrainingEnvironment:
                 self.game.play(player=player_id, card=None)
 
     def move(self, move):
-        #print("Move", move)
+        # print("Move", move)
         hand = self.game.current_player.hand
         current = self.game.current_card
 
         # Get the filtering function and intended new color for the move
         filter_fn = self.get_move_filter(move)
         if filter_fn is None:
-            #print("Thats not an action")
-            obs = {"hand": hand, "current_card": current, "history": self.game.history, "player_number": self.player_number, "direction": self.game._player_cycle._reverse}
+            # print("That's not an action")
+            obs = {"hand": hand, "current_card": current, "history": self.game.history,
+                   "player_number": self.player_number, "direction": self.game._player_cycle._reverse}
             reward = self.rewards['wrong_card']
             done = not self.game.is_active
             return obs, reward, done
@@ -149,30 +190,31 @@ class TrainingEnvironment:
         # Choose a legal card index based on the filter
         card_index = self.choose_card_index(hand, current, filter_fn, move)
         if card_index is None:
-            #print("No matching card", move, hand, current, current.color, current.temp_color)
-            obs = {"hand": hand, "current_card": current, "history": self.game.history, "player_number": self.player_number, "direction": self.game._player_cycle._reverse}
+            # print("No matching card", move, hand, current, current.color, current.temp_color)
+            obs = {"hand": hand, "current_card": current, "history": self.game.history,
+                   "player_number": self.player_number, "direction": self.game._player_cycle._reverse}
             reward = self.rewards['wrong_card']
             done = not self.game.is_active
             return obs, reward, done
 
-        # TODO: Update FRANK
-        if move == 5 or move == 9:
+        if move == 3:
             new_color = "red"
-        elif move == 6 or move == 10:
+        elif move == 4:
             new_color = "yellow"
-        elif move == 7 or move == 11:
+        elif move == 5:
             new_color = "green"
-        elif move == 8 or move == 12:
+        elif move == 6:
             new_color = "blue"
         else:
             new_color = None
-        #print(move, new_color)
+        # print(move, new_color)
         # Attempt to play the selected card
         try:
             self.game.play(player=self.player_number, card=card_index, new_color=new_color)
         except ValueError:
-            #print("Error when playing card")
-            obs = {"hand": hand, "current_card": current, "history": self.game.history, "player_number": self.player_number, "direction": self.game._player_cycle._reverse}
+            # print("Error when playing card")
+            obs = {"hand": hand, "current_card": current, "history": self.game.history,
+                   "player_number": self.player_number, "direction": self.game._player_cycle._reverse}
             reward = self.rewards['wrong_card']
             done = not self.game.is_active
             return obs, reward, done
@@ -180,7 +222,7 @@ class TrainingEnvironment:
         # Process turns for other players
         self.handle_other_players()
 
-        # Build the new observation 
+        # Build the new observation
         obs = {
             "current_card": self.game.current_card,
             "hand": self.game.current_player.hand,

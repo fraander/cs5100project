@@ -4,8 +4,6 @@ from RandomPlayer import RandomPlayer
 from uno import UnoGame, COLORS
 
 
-# TODO: Rahul, update action space to match `todo.md`
-
 class TrainingEnvironment:
     num_players = 3
 

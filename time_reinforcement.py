@@ -120,6 +120,8 @@ def hash(obs) -> int:
     if hand_max_color > 3:
         print("hand_max_color bad")
 
+    hand_size = min(9, len(hand)) - 1
+
     # convert matches to index and return
     return (next_next_last_draw_color
             + 5 * next_last_draw_color
@@ -129,7 +131,8 @@ def hash(obs) -> int:
             + 5 * 5 * 2 * 2 * 2 * match_draw_2_skip_or_rev
             + 5 * 5 * 2 * 2 * 2 * 2 * match_color
             + 5 * 5 * 2 * 2 * 2 * 2 * 2 * match_num
-            + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * hand_max_color)
+            + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * hand_max_color
+            + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * 8 * hand_size)
 
 
 def test_table(q, num_episodes=1000):

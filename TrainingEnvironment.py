@@ -231,6 +231,10 @@ class TrainingEnvironment:
             "direction": self.game._player_cycle._reverse,
         }
 
+        # force a loss if the player goes over 9 cards in their hand
+        if len(self.game.current_player.hand) > 9:
+            self.game._winner = True
+
         if not self.game.is_active:
             if self.game.winner.player_id == self.player_number:
                 reward = self.rewards['win']

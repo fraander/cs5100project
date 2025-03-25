@@ -7,9 +7,8 @@ from TrainingEnvironment import TrainingEnvironment
 
 env = TrainingEnvironment()
 NUM_ACTIONS = 7
-NUM_STATES = 51200
+NUM_STATES = 409600
 
-# TODO: Make it lose if it gets over 9 cards
 
 LOGS = "./logs/logs3.23.csv"
 PICKLE = "./pickles/pickle3.23.pickle"

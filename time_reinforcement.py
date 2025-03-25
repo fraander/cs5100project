@@ -6,8 +6,8 @@ import numpy as np
 from TrainingEnvironment import TrainingEnvironment
 
 env = TrainingEnvironment()
-NUM_ACTIONS = 13
-NUM_STATES = 76801
+NUM_ACTIONS = 7
+NUM_STATES = 51200
 
 # TODO: Make it lose if it gets over 9 cards
 

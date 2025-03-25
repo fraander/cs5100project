@@ -16,21 +16,14 @@ class TrainingEnvironment:
         'lose': -10000,
     }
 
-    # TODO: Update (FRANK)
     actions = {
         1: "match_color",
         2: "match_number",
-        3: "skip",
-        4: "reverse",
-        5: "draw_2",
-        6: "draw_4_red",
-        7: "draw_4_yellow",
-        8: "draw_4_green",
-        9: "draw_4_blue",
-        10: "wild_red",
-        11: "wild_yellow",
-        12: "wild_green",
-        13: "wild_blue"
+        3: "skip/reverse/draw_2",
+        4: "wild/draw_4_red",
+        5: "wild/draw_4_yellow",
+        6: "wild/draw_4_green",
+        7: "wild/draw_4_blue",
     }
 
 

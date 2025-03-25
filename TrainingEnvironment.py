@@ -16,6 +16,7 @@ class TrainingEnvironment:
         'lose': -10000,
     }
 
+    # TODO: Update (FRANK)
     actions = {
         1: "match_color",
         2: "match_number",
@@ -57,6 +58,7 @@ class TrainingEnvironment:
     helper methods for actions
     '''
 
+    # TODO: Update these functions
     @staticmethod
     def matching_number(card, current):
         return card.card_type == current.card_type and current.playable(card)
@@ -94,6 +96,7 @@ class TrainingEnvironment:
     # 6 - play a draw 4
     # 7 - play a wildcard
     def get_move_filter(self, move):
+        # TODO: Update (FRANK)
         move_mapping = {
             0: self.matching_color,
             1: self.matching_number,
@@ -158,7 +161,8 @@ class TrainingEnvironment:
             reward = self.rewards['wrong_card']
             done = not self.game.is_active
             return obs, reward, done
-        
+
+        # TODO: Update FRANK
         if move == 5 or move == 9:
             new_color = "red"
         elif move == 6 or move == 10:

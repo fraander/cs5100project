@@ -9,6 +9,8 @@ env = TrainingEnvironment()
 NUM_ACTIONS = 13
 NUM_STATES = 76801
 
+# TODO: Make it lose if it gets over 9 cards
+
 LOGS = "./logs/logs3.23.csv"
 PICKLE = "./pickles/pickle3.23.pickle"
 
@@ -20,6 +22,7 @@ color_indices = {
     'yellow': 4,
 }
 
+
 # Open the Q-table from a file
 def read_q(file_path=None):
     if file_path is not None:
@@ -27,14 +30,16 @@ def read_q(file_path=None):
             return pickle.load(file)
     return None
 
+
 def hash(obs) -> int:
     # unpack observation
-    current, hand, history, player_num, direction = obs['current_card'], obs['hand'], obs['history'], obs['player_number'], obs['direction']
+    current, hand, history, player_num, direction = obs['current_card'], obs['hand'], obs['history'], obs[
+        'player_number'], obs['direction']
 
-    my_cols = [0,0,0,0]
+    my_cols = [0, 0, 0, 0]
     for i in hand:
         if i.color != 'black':
-            my_cols[color_indices[i.color]-1] += 1
+            my_cols[color_indices[i.color] - 1] += 1
     hand_max_color = np.argmax(my_cols)
 
     # calculate competitor ids
@@ -42,25 +47,26 @@ def hash(obs) -> int:
     acw_num = (player_num + 1) % 3
 
     # calculate each match
-    match_num = 1 if any([c.card_type == current.card_type for c in hand]) else 0 # any card matches current card type
-    match_color = min(2, len([c for c in hand if c.color == current.color and c.card_type not in ['skip', 'reverse', '+2']])) # any card matches current card color
+    match_num = 1 if any([c.card_type == current.card_type for c in hand]) else 0  # any card matches current card type
+    match_color = min(1, len([c for c in hand if c.color == current.color and c.card_type not in ['skip', 'reverse',
+                                                                                                  '+2']]))  # any card matches current card color
 
-    wild = 1 if any(c.card_type == 'wildcard' for c in hand) else 0 # any wildcard in hand
-    draw_4 = 1 if any(c.card_type == '+4' for c in hand) else 0 # any +4 in hand
+    wild_or_draw4 = wild = 1 if any(
+        c.card_type == 'wildcard' or c.card_type == '+4' for c in hand) else 0  # any wildcard in hand
 
-    match_draw_2 = 1 if any([c.color == current.color and c.card_type == '+2' for c in hand]) else 0 # any +2 of color in hand
-    match_skip = 1 if any([c.color == current.color and c.card_type == 'skip' for c in hand]) else 0 # any skip of color in hand
-    match_reverse = 1 if any([c.color == current.color and c.card_type == 'reverse' for c in hand]) else 0 # any rev of color in hand
+    match_draw_2_skip_or_rev = 1 if any(
+        [c.color == current.color and (c.card_type == '+2' or c.card_type == 'skip' or c.card_type == 'reverse') for c
+         in hand]) else 0  # any +2 of color in hand
 
     # clockwise (cw) is default, anti-clockwise (acw) is if an odd number of reverses have been played
     direction_of_play = "cw" if direction else "acw"
 
     # start at 7 cards, add any drawn cards, remove any played cards
-    #print(history[0])
+    # print(history[0])
     cw_hand_size = 7 + sum([h['num_cards'] for h in history if h['player'] == cw_num and h['action'] == 'draw']) \
                    - len([h for h in history if h['player'] == cw_num and h['action'] == 'play'])
     acw_hand_size = 7 + sum([h['num_cards'] for h in history if h['player'] == acw_num and h['action'] == 'draw']) \
-                   - len([h for h in history if h['player'] == acw_num and h['action'] == 'play'])
+                    - len([h for h in history if h['player'] == acw_num and h['action'] == 'play'])
 
     # based on direction of play, use cw or acw and next and next next
     next_uno = cw_hand_size == 1 if direction_of_play == 'cw' else acw_hand_size == 1
@@ -68,7 +74,7 @@ def hash(obs) -> int:
 
     # find the most recent play by the player before the most recent 'draw' that isn't 'black'
     cw_found_draw = False
-    cw_last_draw_color = 'none' # random.choice(list(color_indices.values()))
+    cw_last_draw_color = 'none'  # random.choice(list(color_indices.values()))
     for h in reversed(history):
         if h['player'] == cw_num and h['action'] == 'draw':
             cw_found_draw = True
@@ -77,7 +83,7 @@ def hash(obs) -> int:
             break
 
     acw_found_draw = False
-    acw_last_draw_color = 'none' # random.choice(list(color_indices.values()))
+    acw_last_draw_color = 'none'  # random.choice(list(color_indices.values()))
     for h in reversed(history):
         if h['player'] == acw_num and h['action'] == 'draw':
             acw_found_draw = True
@@ -88,7 +94,7 @@ def hash(obs) -> int:
     # based on direction of play, use cw or acw and next and next next
     next_last_draw_color = color_indices[cw_last_draw_color if direction_of_play == 'cw' else acw_last_draw_color]
     next_next_last_draw_color = color_indices[acw_last_draw_color if direction_of_play == 'cw' else cw_last_draw_color]
-    
+
     if next_next_last_draw_color > 4:
         print('next_last_draw_color bad')
     if next_last_draw_color > 4:
@@ -97,19 +103,19 @@ def hash(obs) -> int:
         print('next_next_uno bad')
     if next_uno > 1:
         print('next_uno bad')
-    if draw_4 > 1:
-        print('draw_4 bad')
+    # if draw_4 > 1:
+    #     print('draw_4 bad')
     if wild > 1:
         print('wild bad')
-    if match_reverse > 1:
-        print('match_reverse bad')
-    if match_skip > 1:
-        print('match_skip bad')
-    if match_draw_2 > 1:
-        print('match_draw_2 bad')
+    # if match_reverse > 1:
+    #     print('match_reverse bad')
+    # if match_skip > 1:
+    #     print('match_skip bad')
+    # if match_draw_2 > 1:
+    #     print('match_draw_2 bad')
     if match_color > 2:
         print('match_color bad')
-    if match_num> 1:
+    if match_num > 1:
         print('match_num bad')
     if hand_max_color > 3:
         print("hand_max_color bad")
@@ -119,14 +125,11 @@ def hash(obs) -> int:
             + 5 * next_last_draw_color
             + 5 * 5 * (1 if next_next_uno else 0)
             + 5 * 5 * 2 * (1 if next_uno else 0)
-            + 5 * 5 * 2 * 2 * draw_4
-            + 5 * 5 * 2 * 2 * 2 * wild
-            + 5 * 5 * 2 * 2 * 2 * 2 * match_reverse
-            + 5 * 5 * 2 * 2 * 2 * 2 * 2 * match_skip
-            + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * match_draw_2
-            + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * match_color
-            + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 3 * match_num
-            + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 3 * 2 * hand_max_color)
+            + 5 * 5 * 2 * 2 * wild_or_draw4
+            + 5 * 5 * 2 * 2 * 2 * match_draw_2_skip_or_rev
+            + 5 * 5 * 2 * 2 * 2 * 2 * match_color
+            + 5 * 5 * 2 * 2 * 2 * 2 * 2 * match_num
+            + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * hand_max_color)
 
 
 def test_table(q, num_episodes=1000):
@@ -176,10 +179,10 @@ def avg_score(Q):
             if Q[i][action] != 0:
                 all_zero = False
         taz += 1 if all_zero else 0
-    return [round(a/len(Q.keys()),2) for a in actions], taz
+    return [round(a / len(Q.keys()), 2) for a in actions], taz
+
 
 def Q_learning(gamma=0.9, epsilon=1, decay=0.999, q_path=None):
-
     start = datetime.now()
     checkpoint = datetime.now()
     logging = []
@@ -195,19 +198,23 @@ def Q_learning(gamma=0.9, epsilon=1, decay=0.999, q_path=None):
     num_updates = np.zeros((NUM_STATES, NUM_ACTIONS))
 
     while datetime.now() < start + timedelta(minutes=480):
-        
+
         if datetime.now() > checkpoint + timedelta(minutes=5):
-            print("{} out of ?? episodes. The Q table has {} entries and has seen {} unique states, the exploration rate is {}".format(episode, 
-                                                                                                                                       len(Q.keys()),
-                                                                                                                                       len(unique_states), 
-                                                                                                                                       epsilon))
+            print(
+                "{} out of ?? episodes. The Q table has {} entries and has seen {} unique states, the exploration rate is {}".format(
+                    episode,
+                    len(Q.keys()),
+                    len(unique_states),
+                    epsilon))
             avg, wins, loses, legal, illegal = test_table(Q, 10000)
             print("The Q_Table got an average reward of {} with {} wins and {} loses for a win percentage of {}".format(
                 avg, wins, loses, wins / (wins + loses) if wins + loses > 0 else 0))
             avg_scores, taz = avg_score(Q)
             print("Average Q score for each action: {}. There are {} states with no scores".format(avg_scores, taz))
             print()
-            logging.append([datetime.now(), episode, epsilon, len(unique_states), legal, illegal, legal / (legal + illegal) if legal + illegal > 0 else 0, avg, wins, loses, wins / (wins + loses) if wins + loses > 0 else 0, taz])
+            logging.append([datetime.now(), episode, epsilon, len(unique_states), legal, illegal,
+                            legal / (legal + illegal) if legal + illegal > 0 else 0, avg, wins, loses,
+                            wins / (wins + loses) if wins + loses > 0 else 0, taz])
             for i in avg_scores:
                 logging[-1].append(i)
             checkpoint = datetime.now()
@@ -244,7 +251,7 @@ def Q_learning(gamma=0.9, epsilon=1, decay=0.999, q_path=None):
             num_updates[hs, action] += 1
 
         episode += 1
-        #print("That game had {} steps and ended with result {}".format(moves, reward))
+        # print("That game had {} steps and ended with result {}".format(moves, reward))
 
     return Q, logging
 
@@ -262,8 +269,6 @@ with open(LOGS, 'w', newline='') as file:
 # Save the Q-table dict to a file
 with open(PICKLE, 'wb') as handle:
     pickle.dump(Q_table, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-
 
 '''
 Uncomment the code below to play an episode using the saved Q-table. Useful for debugging/visualization.

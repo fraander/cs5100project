@@ -19,19 +19,19 @@ class TrainingEnvironment:
     }
 
     actions = {
-        1: "match_color",
-        2: "match_number",
-        3: "skip",
-        4: "reverse",
-        5: "draw_2",
-        6: "draw_4_red",
-        7: "draw_4_yellow",
-        8: "draw_4_green",
-        9: "draw_4_blue",
-        10: "wild_red",
-        11: "wild_yellow",
-        12: "wild_green",
-        13: "wild_blue"
+        0: "match_color",
+        1: "match_number",
+        2: "skip",
+        3: "reverse",
+        4: "draw_2",
+        5: "draw_4_red",
+        6: "draw_4_blue",
+        7: "draw_4_green",
+        8: "draw_4_yellow",
+        9: "wild_red",
+        10: "wild_blue",
+        11: "wild_green",
+        12: "wild_yellow"
     }
 
 
@@ -65,7 +65,9 @@ class TrainingEnvironment:
     
     @staticmethod
     def matching_color(card, current):
-        return (card.color == current.color or (current.color=="black" and card.color == current.temp_color)) and card.card_type not in ['skip', 'reverse', '+2'] and current.playable(card)
+        if current.color == "black":
+            return card.color == current.temp_color and current.playable(card)
+        return card.color == current.color and current.playable(card)
 
     @staticmethod
     def play_skip(card, current):
@@ -161,14 +163,22 @@ class TrainingEnvironment:
             done = not self.game.is_active
             return obs, reward, done
         
+        color_inds = ["red", "blue", "green", "yellow"]
+        if current.color == "blue":
+            color_inds = color_inds[1:] + color_inds[:1]
+        if current.color == "green":
+            color_inds = color_inds[2:] + color_inds[:2]
+        if current.color == "yellow":
+            color_inds = color_inds[3:] + color_inds[:3]
+        
         if move == 5 or move == 9:
-            new_color = "red"
+            new_color = color_inds[0]
         elif move == 6 or move == 10:
-            new_color = "yellow"
+            new_color = color_inds[1]
         elif move == 7 or move == 11:
-            new_color = "green"
+            new_color = color_inds[2]
         elif move == 8 or move == 12:
-            new_color = "blue"
+            new_color = color_inds[3]
         else:
             new_color = None
         #print(move, new_color)

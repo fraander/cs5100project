@@ -9,16 +9,8 @@ env = TrainingEnvironment()
 NUM_ACTIONS = 13
 NUM_STATES = 76801
 
-LOGS = "./logs/logs3.23.csv"
-PICKLE = "./pickles/pickle3.23.pickle"
-
-color_indices = {
-    'none': 0,
-    'red': 1,
-    'blue': 2,
-    'green': 3,
-    'yellow': 4,
-}
+LOGS = "./logs/logs3.26.csv"
+PICKLE = "./pickles/pickle3.26.pickle"
 
 # Open the Q-table from a file
 def read_q(file_path=None):
@@ -30,6 +22,21 @@ def read_q(file_path=None):
 def hash(obs) -> int:
     # unpack observation
     current, hand, history, player_num, direction = obs['current_card'], obs['hand'], obs['history'], obs['player_number'], obs['direction']
+
+    color_inds = ["red", "blue", "green", "yellow"]
+    if current.color == "blue":
+        color_inds = color_inds[1:] + color_inds[:1]
+    if current.color == "green":
+        color_inds = color_inds[2:] + color_inds[:2]
+    if current.color == "yellow":
+        color_inds = color_inds[3:] + color_inds[:3]
+    color_indices = {
+        'none': 0,
+        color_inds[0]: 1,
+        color_inds[1]: 2,
+        color_inds[2]: 3,
+        color_inds[3]: 4,
+    }
 
     my_cols = [0,0,0,0]
     for i in hand:
@@ -43,14 +50,17 @@ def hash(obs) -> int:
 
     # calculate each match
     match_num = 1 if any([c.card_type == current.card_type for c in hand]) else 0 # any card matches current card type
-    match_color = min(2, len([c for c in hand if c.color == current.color and c.card_type not in ['skip', 'reverse', '+2']])) # any card matches current card color
+    if current.color == 'black':
+        match_color = min(2, len([c for c in hand if c.color == current.temp_color])) # any card matches current card color
+    else:
+        match_color = min(2, len([c for c in hand if c.color == current.color]))
 
     wild = 1 if any(c.card_type == 'wildcard' for c in hand) else 0 # any wildcard in hand
     draw_4 = 1 if any(c.card_type == '+4' for c in hand) else 0 # any +4 in hand
 
-    match_draw_2 = 1 if any([c.color == current.color and c.card_type == '+2' for c in hand]) else 0 # any +2 of color in hand
-    match_skip = 1 if any([c.color == current.color and c.card_type == 'skip' for c in hand]) else 0 # any skip of color in hand
-    match_reverse = 1 if any([c.color == current.color and c.card_type == 'reverse' for c in hand]) else 0 # any rev of color in hand
+    match_draw_2 = 1 if any([current.playable(c) and c.card_type == '+2' for c in hand]) else 0 # any +2 of color in hand
+    match_skip = 1 if any([current.playable(c) and c.card_type == 'skip' for c in hand]) else 0 # any skip of color in hand
+    match_reverse = 1 if any([current.playable(c) and c.card_type == 'reverse' for c in hand]) else 0 # any rev of color in hand
 
     # clockwise (cw) is default, anti-clockwise (acw) is if an odd number of reverses have been played
     direction_of_play = "cw" if direction else "acw"
@@ -154,6 +164,8 @@ def test_table(q, num_episodes=1000):
             avg_reward += reward
             if reward == TrainingEnvironment.rewards['wrong_card']:
                 illegal_moves += 1
+                loses += 1
+                done = True
             else:
                 legal_moves += 1
 
@@ -194,7 +206,7 @@ def Q_learning(gamma=0.9, epsilon=1, decay=0.999, q_path=None):
             Q[i] = np.zeros(NUM_ACTIONS)
     num_updates = np.zeros((NUM_STATES, NUM_ACTIONS))
 
-    while datetime.now() < start + timedelta(minutes=480):
+    while datetime.now() < start + timedelta(minutes=720):
         
         if datetime.now() > checkpoint + timedelta(minutes=5):
             print("{} out of ?? episodes. The Q table has {} entries and has seen {} unique states, the exploration rate is {}".format(episode, 

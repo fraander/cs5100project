@@ -136,7 +136,7 @@ loses = 0
 env = TrainingEnvironment()
 logs = []
 
-for episode in range(1000000):
+for episode in range(10000):
     if episode % 10000 == 0:
         print(episode)
     obs, reward, done = env.reset()

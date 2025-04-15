@@ -2,7 +2,7 @@ from Player import Player
 import numpy as np
 import pickle
 
-PICKLE = "./pickles/pickle3.25.normal.pickle"
+PICKLE = "./pickle_final.pickle"
 
 class QPlayer(Player):
     

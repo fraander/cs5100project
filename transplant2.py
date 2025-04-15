@@ -3,8 +3,8 @@ import numpy as np
 from TrainingEnvironment import TrainingEnvironment
 import csv
 
-NPPICKLE = "./pickles/pickle3.25.normal.pickle"
-SAVE = "./pickles/pickle3.25.csv"
+NPPICKLE = "./pickle_final.pickle"
+SAVE = "./pickle_final.csv"
 
 with open(SAVE) as file:
     t = csv.reader(file)

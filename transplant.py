@@ -3,8 +3,8 @@ import numpy as np
 from TrainingEnvironment import TrainingEnvironment
 import csv
 
-PICKLE = "./pickles/pickle3.25.pickle"
-SAVE = "./pickles/pickle3.25.csv"
+PICKLE = "./pickle_final.pickle"
+SAVE = "./pickle_final.csv"
 
 with open(PICKLE, "rb") as file:
     Q = pickle.load(file)

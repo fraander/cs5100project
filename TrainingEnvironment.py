@@ -105,7 +105,6 @@ class TrainingEnvironment:
             new_color = color_inds[3]
         else:
             new_color = None
-        #print(move, new_color)
         
         # Attempt to play the selected card
         try:

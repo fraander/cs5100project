@@ -5,7 +5,7 @@ import csv
 from QPlayer import QPlayer
 
 PICKLE = "./pickle_final.pickle"
-TEST_SIZE = 1000 # number of games to play
+TEST_SIZE = 10000 # number of games to play
 
 # Open the chosen Pickle to run the test with
 with open(PICKLE, "rb") as file:

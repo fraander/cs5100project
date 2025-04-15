@@ -14,10 +14,6 @@ class QPlayer(Player):
         # Open the desired Q-table to play using
         with open(PICKLE, "rb") as file:
             self.Q = pickle.load(file)
-        
-        # Read the open Pickle in as the Q table
-        for i in range(len(self.Q)):
-            self.Q[i] = [float(l.split("(")[1][:-1]) for l in self.Q[i][0]]
 
         super().__init__()
 

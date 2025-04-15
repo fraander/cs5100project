@@ -4,7 +4,8 @@ from TrainingEnvironment import TrainingEnvironment
 import csv
 
 PICKLE = "./pickles/pickle3.25.pickle"
-#LOGS = "./logs/pickle_test_3.23.csv"
+LOGS = "./logs/pickle_test_3.23.csv"
+TEST_SIZE = 1000000 # number of games to play
 
 def hash(obs) -> int:
     # unpack observation
@@ -137,9 +138,7 @@ env = TrainingEnvironment()
 logs = []
 move_dist = [0,0,0,0,0,0,0,0,0,0,0,0,0]
 
-for episode in range(1000):
-    if episode % 10000 == 0:
-        print(episode)
+for episode in range(TEST_SIZE):
     obs, reward, done = env.reset()
     moves = 0
 

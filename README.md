@@ -27,3 +27,6 @@
 	- `time_reinforcement.py` - Q-Learning-based reinforcement learning, based on running for a period of time (primarily used this file for training)
 	- `test_qtable.py` - Evaluate trained Agent after `time_reinforcement.py`
 	- `random_testing.py` - Evaluate Random Agent
+
+## Further exploration
+Following submission of the project we've explored Deep Q-Learning as a potential future improvement. See the progress on the `experiment/dqn-model` branch!

@@ -1,7 +1,7 @@
 # Uno-Bot: Reinforcement Learning Project
 
 ## Environment Setup
-1. Install `Python 3.6`, `pip`, and (`pypy 3.1`)[https://pypy.org/]
+1. Install `Python 3.6`, `pip`, and `pypy 3.1`
 2. Install required packages: `pip install numpy pytest pgzero`
 
 ## Usage

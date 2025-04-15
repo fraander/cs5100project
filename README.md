@@ -9,7 +9,7 @@
 	- Configure `LOGS = ` and `PICKLE = ` to define where to store logging and Q-table files. Configure `RUNTIME = ` to define how long to train, in minutes.
 - **[TEST]** To test a trained agent, configure then run `test_qtable.py`. After completion, the number of wins divided by the total number of games (win percentage) completed is printed to the console.
 	- Configure `LOGS = ` and `PICKLE = ` to define where to store logging and Q-table files. Configure `TEST_SIZE = ` to define how many games to test with.
-- **[RUN WITH GUI]** To run with a GUI active, perform `pgz run` in the Terminal, making use of the `pgzero` library.
+- **[RUN WITH GUI]** To run with a GUI active, run the command `pgzrun uno_pgz.py` in the Terminal, to run using the `pgzero` library.
 	- To choose which Q-table is used in play, configure `PICKLE = ` in `QPlayer.py`
 
 ## Files

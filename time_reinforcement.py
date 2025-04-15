@@ -6,10 +6,10 @@ import numpy as np
 from TrainingEnvironment import TrainingEnvironment
 
 env = TrainingEnvironment()
-NUM_ACTIONS = 7
 
 LOGS = "./logs/logs3.22.csv"
 PICKLE = "./pickles/pickle3.22.pickle"
+RUNTIME = 750 # defined in minutes
 
 color_indices = {
     'none': 0,
@@ -82,6 +82,7 @@ def hash(obs) -> int:
     next_last_draw_color = color_indices[cw_last_draw_color if direction_of_play == 'cw' else acw_last_draw_color]
     next_next_last_draw_color = color_indices[acw_last_draw_color if direction_of_play == 'cw' else cw_last_draw_color]
     
+    # log invalid hashing to console
     if next_next_last_draw_color > 4:
         print('next_last_draw_color bad')
     if next_last_draw_color > 4:
@@ -184,7 +185,7 @@ def Q_learning(gamma=0.9, epsilon=1, decay=0.999, q_path=None):
             Q[i] = np.zeros(NUM_ACTIONS)
     num_updates = np.zeros((19201, NUM_ACTIONS))
 
-    while datetime.now() < start + timedelta(minutes=750):
+    while datetime.now() < start + timedelta(minutes=RUNTIME):
         
         if datetime.now() > checkpoint + timedelta(minutes=5):
             print("{} out of ?? episodes. The Q table has {} entries and has seen {} unique states, the exploration rate is {}".format(episode, 

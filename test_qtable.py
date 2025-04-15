@@ -5,6 +5,7 @@ import csv
 
 PICKLE = "./pickles/pickle3.22.pickle"
 LOGS = "./logs/pickle_test_3.23.csv"
+TEST_SIZE = 1000000 # number of games to play
 
 color_indices = {
     'none': 0,
@@ -114,7 +115,7 @@ loses = 0
 env = TrainingEnvironment()
 logs = []
 
-for episode in range(1000000):
+for episode in range(TEST_SIZE):
     obs, reward, done = env.reset()
     moves = 0
 

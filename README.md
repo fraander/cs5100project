@@ -23,5 +23,7 @@
 	- `random_testing.py` - Evaluate Random Agent
 
 ## Usage
-- Training an Agent: `python reinforcement.py`
-- Test the trained agent: `python test_qtable.py`
+- To train an agent, configure then run `time_reinforcement.py`
+	- Lines 10-12: Configure `LOGS = ` and `PICKLE = ` to define where to store logging and Q-table files. Configure `RUNTIME = ` to define how long to train, in minutes.
+- To test a trained agent, configure then run `test_qtable.py`. After completion, the number of wins divided by the total number of games (win percentage) completed is printed to the console.
+	- Lines 6-8: Configure `LOGS = ` and `PICKLE = ` to define where to store logging and Q-table files. Configure `TEST_SIZE = ` to define how many games to test with.

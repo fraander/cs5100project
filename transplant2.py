@@ -11,7 +11,7 @@ with open(SAVE) as file:
 
     Q = {}
     for i,n in enumerate(t):
-        Q[i] = [n]
+        Q[i] = [float(l) for l in n]
 
 with open(NPPICKLE, 'wb') as handle:
     pickle.dump(Q, handle, protocol=pickle.HIGHEST_PROTOCOL)

@@ -3,7 +3,7 @@ import numpy as np
 from TrainingEnvironment import TrainingEnvironment
 import csv
 
-PICKLE = "./pickle_final.pickle"
+PICKLE = "./pickles/pickle3.25testing.pickle"
 SAVE = "./pickle_final.csv"
 
 with open(PICKLE, "rb") as file:
@@ -11,7 +11,7 @@ with open(PICKLE, "rb") as file:
 
 t = []
 for i in range(len(Q)):
-    t.append(Q[i])
+    t.append([float(i) for i in Q[i]])
 
 with open(SAVE, 'w', newline='') as f:
     csvwriter = csv.writer(f)

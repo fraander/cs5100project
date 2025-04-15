@@ -181,8 +181,6 @@ class QPlayer(Player):
                 best_card = idx  
         return best_card  # Play normal card only if no action cards available
 
-
-
     # Implemented by all Player classes , chooses the desired action and sends to game
     def take_turn(self, hand, current_card, history, player_num, direction):
 

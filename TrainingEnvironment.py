@@ -73,7 +73,6 @@ class TrainingEnvironment:
         # Get the filtering function and intended new color for the move
         filter_fn = QPlayer.get_move_filter(move)
         if filter_fn is None:
-            #print("Thats not an action")
             obs = {"hand": hand, "current_card": current, "history": self.game.history, "player_number": self.player_number, "direction": self.game._player_cycle._reverse}
             reward = self.rewards['wrong_card']
             done = not self.game.is_active

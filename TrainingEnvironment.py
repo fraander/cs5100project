@@ -3,8 +3,6 @@ import numpy as np
 from RandomPlayer import RandomPlayer
 from uno import UnoGame, COLORS
 
-
-
 class TrainingEnvironment:
     num_players = 3
 

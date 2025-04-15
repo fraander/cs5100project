@@ -15,7 +15,8 @@ class QPlayer(Player):
 
         super().__init__()
 
-    def hash(self, obs) -> int:
+    @staticmethod
+    def hash(obs) -> int:
         # unpack observation
         current, hand, history, player_num, direction = obs['current_card'], obs['hand'], obs['history'], obs['player_number'], obs['direction']
 
@@ -196,7 +197,7 @@ class QPlayer(Player):
 
     def take_turn(self, hand, current_card, history, player_num, direction):
 
-        hs = self.hash({'current_card': current_card, 'hand': hand, 'history': history, 'player_number': player_num, 'direction': direction})
+        hs = QPlayer.hash({'current_card': current_card, 'hand': hand, 'history': history, 'player_number': player_num, 'direction': direction})
         
         action = np.argmax(self.Q[hs])
 

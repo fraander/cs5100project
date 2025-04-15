@@ -150,22 +150,22 @@ class QPlayer(Player):
         return card.card_type == 'wildcard' and current.playable(card)
 
     # Command pattern for mapping Agent action to specific game method
-
-    def get_move_filter(self, move):
+    @staticmethod
+    def get_move_filter(move):
         move_mapping = {
-            0: self.matching_color,
-            1: self.matching_number,
-            2: self.play_skip,
-            3: self.play_reverse,
-            4: self.play_draw_two,
-            5: self.play_draw_four,
-            6: self.play_draw_four,
-            7: self.play_draw_four,
-            8: self.play_draw_four,
-            9: self.play_wild,
-            10: self.play_wild,
-            11: self.play_wild,
-            12: self.play_wild,
+            0: QPlayer.matching_color,
+            1: QPlayer.matching_number,
+            2: QPlayer.play_skip,
+            3: QPlayer.play_reverse,
+            4: QPlayer.play_draw_two,
+            5: QPlayer.play_draw_four,
+            6: QPlayer.play_draw_four,
+            7: QPlayer.play_draw_four,
+            8: QPlayer.play_draw_four,
+            9: QPlayer.play_wild,
+            10: QPlayer.play_wild,
+            11: QPlayer.play_wild,
+            12: QPlayer.play_wild,
         }
         return move_mapping.get(move, None)
 

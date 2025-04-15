@@ -1,4 +1,5 @@
 import numpy as np
+from QPlayer import QPlayer
 
 from RandomPlayer import RandomPlayer
 from uno import UnoGame, COLORS
@@ -79,7 +80,7 @@ class TrainingEnvironment:
             return obs, reward, done
 
         # Choose a legal card index based on the filter
-        card_index = self.choose_card_index(hand, current, filter_fn, move)
+        card_index = QPlayer.choose_card_index(hand, current, filter_fn, move)
         if card_index is None:
             #print("No matching card", move, hand, current, current.color, current.temp_color)
             obs = {"hand": hand, "current_card": current, "history": self.game.history, "player_number": self.player_number, "direction": self.game._player_cycle._reverse}

@@ -34,9 +34,9 @@
 
 ## Comparison Implementations
 We compared against other agent implementations to verify the signficance of our results. They can be found on the following branches:
-- **Rule-based** [`/compare/rule-based`] Prioritizes playing Wild & +4 cards, then +2/Skip/Reverse cards, then standard cards
-- **Limited Action Space** [`/compare/limited`] Automatically chooses the color after Wild for the agent
-- **Random** [`/compare/random`] Randomly takes valid actions
+- **Rule-based** [`compare/rule-based`] Prioritizes playing Wild & +4 cards, then +2/Skip/Reverse cards, then standard cards
+- **Limited Action Space** [`compare/limited`] Automatically chooses the color after Wild for the agent
+- **Random** [`compare/random`] Randomly takes valid actions
 
 ## Further exploration
 Following submission of the project we've explored Deep Q-Learning as a potential future improvement. See the progress on the `experiment/dqn-model` branch!

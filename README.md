@@ -34,7 +34,7 @@
 
 ## Comparison Implementations
 We compared against other agent implementations to verify the signficance of our results. They can be found on the following branches:
-- **Rule-based** [compare/rule-based] Prioritizes playing Wild & +4 cards, then +2/Skip/Reverse cards, then standard cards
+- **Rule-based** [[compare/rule-based](https://github.com/fraander/cs5100project/tree/compare/rule-based)] Prioritizes playing Wild & +4 cards, then +2/Skip/Reverse cards, then standard cards
 - **Limited Action Space** [[compare/limited](https://github.com/fraander/cs5100project/tree/compare/limited)] Automatically chooses the color after Wild for the agent
 - **Random** [[compare/random](https://github.com/fraander/cs5100project/tree/compare/random)] Randomly takes valid actions
 

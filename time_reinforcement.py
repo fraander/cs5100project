@@ -6,18 +6,12 @@ import numpy as np
 from TrainingEnvironment import TrainingEnvironment
 
 env = TrainingEnvironment()
+NUM_ACTIONS = 13
+NUM_STATES = 76801
 
-LOGS = "./logs/logs3.22.csv"
-PICKLE = "./pickles/pickle3.22.pickle"
+LOGS = "./logs/logs4.4.csv"
+PICKLE = "./pickles/pickle4.4.pickle"
 RUNTIME = 750 # defined in minutes
-
-color_indices = {
-    'none': 0,
-    'red': 1,
-    'blue': 2,
-    'green': 3,
-    'yellow': 4,
-}
 
 # Open the Q-table from a file
 def read_q(file_path=None):
@@ -30,20 +24,44 @@ def hash(obs) -> int:
     # unpack observation
     current, hand, history, player_num, direction = obs['current_card'], obs['hand'], obs['history'], obs['player_number'], obs['direction']
 
+    color_inds = ["red", "blue", "green", "yellow"]
+    if current.color == "blue":
+        color_inds = color_inds[1:] + color_inds[:1]
+    if current.color == "green":
+        color_inds = color_inds[2:] + color_inds[:2]
+    if current.color == "yellow":
+        color_inds = color_inds[3:] + color_inds[:3]
+    color_indices = {
+        'none': 0,
+        color_inds[0]: 1,
+        color_inds[1]: 2,
+        color_inds[2]: 3,
+        color_inds[3]: 4,
+    }
+
+    my_cols = [0,0,0,0]
+    for i in hand:
+        if i.color != 'black':
+            my_cols[color_indices[i.color]-1] += 1
+    hand_max_color = np.argmax(my_cols)
+
     # calculate competitor ids
     cw_num = (player_num - 1) % 3
     acw_num = (player_num + 1) % 3
 
     # calculate each match
     match_num = 1 if any([c.card_type == current.card_type for c in hand]) else 0 # any card matches current card type
-    match_color = min(2, len([c for c in hand if c.color == current.color])) # any card matches current card color
+    if current.color == 'black':
+        match_color = min(2, len([c for c in hand if c.color == current.temp_color])) # any card matches current card color
+    else:
+        match_color = min(2, len([c for c in hand if c.color == current.color]))
 
     wild = 1 if any(c.card_type == 'wildcard' for c in hand) else 0 # any wildcard in hand
     draw_4 = 1 if any(c.card_type == '+4' for c in hand) else 0 # any +4 in hand
 
-    match_draw_2 = 1 if any([c.color == current.color and c.card_type == '+2' for c in hand]) else 0 # any +2 of color in hand
-    match_skip = 1 if any([c.color == current.color and c.card_type == 'skip' for c in hand]) else 0 # any skip of color in hand
-    match_reverse = 1 if any([c.color == current.color and c.card_type == 'reverse' for c in hand]) else 0 # any rev of color in hand
+    match_draw_2 = 1 if any([current.playable(c) and c.card_type == '+2' for c in hand]) else 0 # any +2 of color in hand
+    match_skip = 1 if any([current.playable(c) and c.card_type == 'skip' for c in hand]) else 0 # any skip of color in hand
+    match_reverse = 1 if any([current.playable(c) and c.card_type == 'reverse' for c in hand]) else 0 # any rev of color in hand
 
     # clockwise (cw) is default, anti-clockwise (acw) is if an odd number of reverses have been played
     direction_of_play = "cw" if direction else "acw"
@@ -57,7 +75,7 @@ def hash(obs) -> int:
 
     # based on direction of play, use cw or acw and next and next next
     next_uno = cw_hand_size == 1 if direction_of_play == 'cw' else acw_hand_size == 1
-    next_next_uno = acw_hand_size == 1 if direction_of_play == 'acw' else cw_hand_size == 1
+    next_next_uno = acw_hand_size == 1 if direction_of_play == 'cw' else cw_hand_size == 1
 
     # find the most recent play by the player before the most recent 'draw' that isn't 'black'
     cw_found_draw = False
@@ -105,6 +123,8 @@ def hash(obs) -> int:
         print('match_color bad')
     if match_num> 1:
         print('match_num bad')
+    if hand_max_color > 3:
+        print("hand_max_color bad")
 
     # convert matches to index and return
     return (next_next_last_draw_color
@@ -117,7 +137,8 @@ def hash(obs) -> int:
             + 5 * 5 * 2 * 2 * 2 * 2 * 2 * match_skip
             + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * match_draw_2
             + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * match_color
-            + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 3 * match_num)
+            + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 3 * match_num
+            + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 3 * 2 * hand_max_color)
 
 
 def test_table(q, num_episodes=1000):
@@ -143,14 +164,16 @@ def test_table(q, num_episodes=1000):
             steps += 1
 
             avg_reward += reward
-            if reward == -50000:
+            if reward == TrainingEnvironment.rewards['wrong_card']:
                 illegal_moves += 1
-            if reward == 10 or reward == 500 or reward == 100 or reward == 10000:
+                loses += 1
+                done = True
+            else:
                 legal_moves += 1
 
-        if reward == 10000:
+        if reward == TrainingEnvironment.rewards['win']:
             wins += 1
-        elif reward == -10000:
+        elif reward == TrainingEnvironment.rewards['lose']:
             loses += 1
 
     print("The table made {} legal and {} illegal moves".format(legal_moves, illegal_moves))
@@ -181,9 +204,9 @@ def Q_learning(gamma=0.9, epsilon=1, decay=0.999, q_path=None):
     Q = loaded if loaded is not None else {}
 
     if loaded is None:
-        for i in range(19201):
+        for i in range(NUM_STATES):
             Q[i] = np.zeros(NUM_ACTIONS)
-    num_updates = np.zeros((19201, NUM_ACTIONS))
+    num_updates = np.zeros((NUM_STATES, NUM_ACTIONS))
 
     while datetime.now() < start + timedelta(minutes=RUNTIME):
         

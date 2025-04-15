@@ -86,7 +86,6 @@ def hash(obs) -> int:
     uniques_vals[8].add(match_draw_2)
     uniques_vals[9].add(match_color)
     uniques_vals[10].add(match_num)
-    
     if next_next_last_draw_color > 4:
         print('next_last_draw_color bad')
     if next_last_draw_color > 4:
@@ -174,14 +173,14 @@ def test_and_log(num_episodes):
 # decay_rate = 0.99
 
 # # Give the file path of the Q_table.pickle to load an existing Q_table
-logs = test_and_log(500000)
-for i in uniques_vals:
-    print(i)
+logs = test_and_log(10)
+for i in zip(uniques_vals, ["next_next_last_draw_color", "next_last_draw_color", "next_next_uno", "next_uno", "draw_4", "wild", "match_reverse", "match_skip", "match_draw_2", "match_color", "match_num"]):
+    print(i[1], i[0])
 # # Q_table = Q_learning(num_episodes=10000, gamma=0.9, epsilon=1, decay_rate=decay_rate) # Run Q-learning
 
-with open(LOGS, 'w', newline='') as file:
-    csvwriter = csv.writer(file)
-    csvwriter.writerows(logs)
+#with open(LOGS, 'w', newline='') as file:
+#    csvwriter = csv.writer(file)
+#    csvwriter.writerows(logs)
 
 # # Save the Q-table dict to a file
 # with open(PICKLE, 'wb') as handle:

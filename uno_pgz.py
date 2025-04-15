@@ -1,7 +1,8 @@
-from random import shuffle, choice, randint
+import numpy as np
 from itertools import product, repeat, chain
 from threading import Thread
 from time import sleep
+from QPlayer import QPlayer
 
 
 COLORS = ['red', 'yellow', 'green', 'blue']
@@ -158,6 +159,7 @@ class UnoGame:
         self._current_player = next(self._player_cycle)
         self._winner = None
         self._check_first_card()
+        self.history = []
 
     def __next__(self):
         """
@@ -175,7 +177,7 @@ class UnoGame:
         all_cards = chain(color_cards, black_cards)
         deck = [UnoCard(color, card_type) for color, card_type in all_cards]
         if random:
-            shuffle(deck)
+            np.random.shuffle(deck)
             return deck
         else:
             return list(reversed(deck))
@@ -288,7 +290,7 @@ class UnoGame:
 
     def _check_first_card(self):
         if self.current_card.color == 'black':
-            color = choice(COLORS)
+            color = np.random.choice(COLORS)
             self.current_card.temp_color = color
             print("Selected random color for black card: {}".format(color))
 
@@ -379,44 +381,25 @@ game_data = GameData()
 class AIUnoGame:
     def __init__(self, players):
         self.game = UnoGame(players)
-        self.player = choice(self.game.players)
-        self.player_index = self.game.players.index(self.player)
-        print('The game begins. You are Player {}.'.format(self.player_index))
+        self.q_player = np.random.choice(self.game.players)
+        self.q_agent = QPlayer()
+        self.q_player_index = self.game.players.index(self.q_player)
+        print('The game begins. You are Player {}.'.format(self.q_player_index))
 
     def __next__(self):
         game = self.game
         player = game.current_player
         player_id = player.player_id
         current_card = game.current_card
-        if player == self.player:
-            played = False
-            while not played:
-                card_index = None
-                while card_index is None:
-                    card_index = game_data.selected_card
-                new_color = None
-                if card_index is not False:
-                    card = player.hand[card_index]
-                    if not game.current_card.playable(card):
-                        game_data.log = 'You cannot play that card'
-                        continue
-                    else:
-                        game_data.log = 'You played card {:full}'.format(card)
-                        if card.color == 'black' and len(player.hand) > 1:
-                            game_data.color_selection_required = True
-                            while new_color is None:
-                                new_color = game_data.selected_color
-                            game_data.log = 'You selected {}'.format(new_color)
-                else:
-                    card_index = None
-                    game_data.log = 'You picked up'
-                game.play(player_id, card_index, new_color)
-                played = True
+        if player == self.q_player and player.can_play(game.current_card):
+            card_index, new_color = self.q_agent.take_turn(self.q_player.hand, game.current_card, game.history, self.q_player_index, game._player_cycle._reverse)
+            game.play(player_id, card_index, new_color)
+            played = True
         elif player.can_play(game.current_card):
             for i, card in enumerate(player.hand):
                 if game.current_card.playable(card):
                     if card.color == 'black':
-                        new_color = choice(COLORS)
+                        new_color = np.random.choice(COLORS)
                     else:
                         new_color = None
                     game_data.log = "Player {} played {:full}".format(player, card)
@@ -436,15 +419,16 @@ num_players = 3
 
 game = AIUnoGame(num_players)
 
-WIDTH = 1200
+WIDTH = 1000
 HEIGHT = 800
+DELAY = 1
 
 deck_img = Actor('back')
 color_imgs = {color: Actor(color) for color in COLORS}
 
 def game_loop():
     while game.game.is_active:
-        sleep(1)
+        sleep(DELAY)
         next(game)
 
 game_loop_thread = Thread(target=game_loop)
@@ -469,13 +453,13 @@ def draw_players_hands():
     for p, player in enumerate(game.game.players):
         color = 'red' if player == game.game.current_player else 'black'
         text = 'P{} {}'.format(p, 'wins' if game.game.winner == player else '')
-        screen.draw.text(text, (0, 300+p*130), fontsize=100, color=color)
+        screen.draw.text(text if p != game.q_player_index else "Q Agent", (0, 300+p*130), fontsize=100, color=color)
         for c, card in enumerate(player.hand):
-            if player == game.player:
+            if player == game.q_player:
                 sprite = card.sprite
             else:
                 sprite = Actor('back')
-            sprite.pos = (130+c*80, 330+p*130)
+            sprite.pos = (330+c*80, 330+p*130)
             sprite.draw()
 
 def show_log():
@@ -489,11 +473,11 @@ def update():
     show_log()
 
 def on_mouse_down(pos):
-    if game.player == game.game.current_player:
-        for card in game.player.hand:
+    if game.q_player == game.game.current_player:
+        for card in game.q_player.hand:
             if card.sprite.collidepoint(pos):
-                game_data.selected_card = game.player.hand.index(card)
-                print('Selected card {} index {}'.format(card, game.player.hand.index(card)))
+                game_data.selected_card = game.q_player.hand.index(card)
+                print('Selected card {} index {}'.format(card, game.q_player.hand.index(card)))
         if deck_img.collidepoint(pos):
             game_data.selected_card = False
             print('Selected pick up')

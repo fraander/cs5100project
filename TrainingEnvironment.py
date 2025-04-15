@@ -8,7 +8,6 @@ class TrainingEnvironment:
     Handles player moves in the appropriate order. Gives the appropriate reward to the AI agent after the AI Player goes.
     """
 
-
     num_players = 3
 
     rewards = {

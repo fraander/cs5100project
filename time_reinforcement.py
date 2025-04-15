@@ -164,11 +164,8 @@ def Q_learning(gamma=0.9, epsilon=1, decay=0.999, q_path=None):
     return Q, logging
 
 
-decay_rate = 0.99
-
 # Give the file path of the Q_table.pickle to load an existing Q_table
-Q_table, logs = Q_learning(gamma=0.9, epsilon=1, decay=decay_rate, q_path=None)  # Run Q-learning
-# Q_table = Q_learning(num_episodes=10000, gamma=0.9, epsilon=1, decay_rate=decay_rate) # Run Q-learning
+Q_table, logs = Q_learning(gamma=0.9, epsilon=1, decay=0.99, q_path=None)  # Run Q-learning
 
 with open(LOGS, 'w', newline='') as file:
     csvwriter = csv.writer(file)

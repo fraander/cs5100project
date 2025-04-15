@@ -28,18 +28,25 @@ for episode in range(TEST_SIZE):
 
         # Choose the best move from the table
         hs = QPlayer.hash(obs)
-        action = np.argmax(Q[hs])
+        
+        # choose a random action - grouped +4 & wild actions into single choice each, then ungroup after
+        action = np.random.randint(13-6)
+        
+        # choose a random color when choosing +4
+        if action == 5:
+            action = random.choice([5, 6, 7, 8])
+            
+        # choose a random color when choosing wild
+        elif action == 6:
+            action = random.choice([9, 10, 11, 12])
+        
         move_dist[action] += 1
 
         # Make the move
         obs, reward, done = env.move(action)
         
         # Update the metrics as relevant
-        if reward == TrainingEnvironment.rewards['wrong_card']:
-            print(obs['current_card'], action)
-            done = True
-            loses += 1
-        elif reward == TrainingEnvironment.rewards['lose']:
+        if reward == TrainingEnvironment.rewards['lose']:
             done = True
             loses += 1
         elif reward == TrainingEnvironment.rewards['win']:

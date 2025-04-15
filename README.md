@@ -1,13 +1,13 @@
 # Uno-Bot: Reinforcement Learning Project
 
 ## Environment Setup
-1. Install `Python 3.6`, `pip`, and `pypy 3.1`
+1. Install `Python 3.6` and `pip`
 2. Install required packages: `pip install numpy pytest pgzero`
 
 ## Usage
-- **[TRAIN]** To train an agent, configure then run `pypy time_reinforcement.py`
+- **[TRAIN]** To train an agent, configure then run `python time_reinforcement.py`
 	- Configure `LOGS = ` and `PICKLE = ` to define where to store logging and Q-table files. Configure `RUNTIME = ` to define how long to train, in minutes.
-- **[TEST]** To test a trained agent, configure then run `pypy test_qtable.py`. After completion, the number of wins divided by the total number of games (win percentage) completed is printed to the console.
+- **[TEST]** To test a trained agent, configure then run `python test_qtable.py`. After completion, the number of wins divided by the total number of games (win percentage) completed is printed to the console.
 	- Configure `LOGS = ` and `PICKLE = ` to define where to store logging and Q-table files. Configure `TEST_SIZE = ` to define how many games to test with.
 - **[RUN WITH GUI]** To run with a GUI active, run the command `pgzrun uno_pgz.py` in the Terminal, to run using the `pgzero` library.
 	- To choose which Q-table is used in play, configure `PICKLE = ` in `QPlayer.py`

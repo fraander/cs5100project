@@ -27,7 +27,6 @@
 
 - **Training Files:**
 	- `TrainingEnvironment.py` - Training environment
-	- `reinforcement.py` - Q-Learning-based reinforcement learning, based on running a set number of episodes (pivoted away from this approach; see `time_reinforcement.py`)
 	- `time_reinforcement.py` - Q-Learning-based reinforcement learning, based on running for a period of time (primarily used this file for training)
 	- `test_qtable.py` - Evaluate trained Agent after `time_reinforcement.py`
 	- `random_testing.py` - Evaluate Random Agent

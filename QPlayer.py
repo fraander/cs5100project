@@ -2,19 +2,26 @@ from Player import Player
 import numpy as np
 import pickle
 
+# !! Configuration !!
 PICKLE = "./pickle_final.pickle"
 
 class QPlayer(Player):
+    """
+    Player class for the AI agent.
+    """
     
     def __init__(self):
+        # Open the desired Q-table to play using
         with open(PICKLE, "rb") as file:
             self.Q = pickle.load(file)
         
+        # Read the open Pickle in as the Q table
         for i in range(len(self.Q)):
             self.Q[i] = [float(l.split("(")[1][:-1]) for l in self.Q[i][0]]
 
         super().__init__()
 
+    # Convert game observations to a lookup value for the Q-table
     @staticmethod
     def hash(obs) -> int:
         # unpack observation
@@ -95,31 +102,6 @@ class QPlayer(Player):
         # based on direction of play, use cw or acw and next and next next
         next_last_draw_color = color_indices[cw_last_draw_color if direction_of_play == 'cw' else acw_last_draw_color]
         next_next_last_draw_color = color_indices[acw_last_draw_color if direction_of_play == 'cw' else cw_last_draw_color]
-        
-        if next_next_last_draw_color > 4:
-            print('next_last_draw_color bad')
-        if next_last_draw_color > 4:
-            print('next_last_draw_color bad')
-        if next_next_uno > 1:
-            print('next_next_uno bad')
-        if next_uno > 1:
-            print('next_uno bad')
-        if draw_4 > 1:
-            print('draw_4 bad')
-        if wild > 1:
-            print('wild bad')
-        if match_reverse > 1:
-            print('match_reverse bad')
-        if match_skip > 1:
-            print('match_skip bad')
-        if match_draw_2 > 1:
-            print('match_draw_2 bad')
-        if match_color > 2:
-            print('match_color bad')
-        if match_num> 1:
-            print('match_num bad')
-        if hand_max_color > 3:
-            print("hand_max_color bad")
 
         # convert matches to index and return
         return (next_next_last_draw_color
@@ -134,6 +116,8 @@ class QPlayer(Player):
                 + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * match_color
                 + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 3 * match_num
                 + 5 * 5 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 3 * 2 * hand_max_color)
+
+    # == Convert actions to secific cards - Agent language -> Uno Game language ==
 
     @staticmethod
     def matching_number(card, current):
@@ -165,6 +149,8 @@ class QPlayer(Player):
     def play_wild(card, current):
         return card.card_type == 'wildcard' and current.playable(card)
 
+    # Command pattern for mapping Agent action to specific game method
+
     def get_move_filter(self, move):
         move_mapping = {
             0: self.matching_color,
@@ -195,6 +181,9 @@ class QPlayer(Player):
                 best_card = idx  
         return best_card  # Play normal card only if no action cards available
 
+
+
+    # Implemented by all Player classes , chooses the desired action and sends to game
     def take_turn(self, hand, current_card, history, player_num, direction):
 
         hs = QPlayer.hash({'current_card': current_card, 'hand': hand, 'history': history, 'player_number': player_num, 'direction': direction})
@@ -230,6 +219,7 @@ class QPlayer(Player):
         else:
             new_color = None
         
+        # Human-readable actions
         actions = {
             0: "match the current color",
             1: "match the current number",

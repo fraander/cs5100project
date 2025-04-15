@@ -10,9 +10,10 @@ env = TrainingEnvironment()
 NUM_ACTIONS = 13
 NUM_STATES = 76801
 
-LOGS = "./logs/logs4.15.csv"
-PICKLE = "./pickles/pickle4.15.pickle"
-RUNTIME = 750 # defined in minutes
+# !! Configuration !!
+LOGS = "./logs/logs4.4.csv"
+PICKLE = "./pickles/pickle4.4.pickle"
+RUNTIME = 750 # measured in minutes
 
 # Open the Q-table from a file
 def read_q(file_path=None):
@@ -23,26 +24,34 @@ def read_q(file_path=None):
 
 def test_table(q, num_episodes=1000):
     """
-    Runs 1000 games, checks wins vs loses
+    Runs a set number of games, calculates win-loss record
     """
+    # Metrics to track
     avg_reward = 0
     wins = 0
     loses = 0
     illegal_moves = 0
     legal_moves = 0
 
+    # Run each of the games
     for _ in range(num_episodes):
 
         obs, reward, done = env.reset()
         steps = 0
 
+        # Play game until completion; or 100 played moves
         while done == False and steps < 100:
+
+            # Get the best action for the given state
             hs = QPlayer.hash(obs)
 
             action = np.argmax(q[hs])
+            
+            # Take the action
             obs, reward, done = env.move(action)
+            
+            # Adjust metrics as relevant
             steps += 1
-
             avg_reward += reward
             if reward == TrainingEnvironment.rewards['wrong_card']:
                 illegal_moves += 1
@@ -56,11 +65,16 @@ def test_table(q, num_episodes=1000):
         elif reward == TrainingEnvironment.rewards['lose']:
             loses += 1
 
+    # Share result of test run
     print("The table made {} legal and {} illegal moves".format(legal_moves, illegal_moves))
     return avg_reward / num_episodes, wins, loses, legal_moves, illegal_moves
 
 
 def avg_score(Q):
+    """
+    Calculate the average value of all cells in the Q table 
+    """
+
     actions = [0] * NUM_ACTIONS
     taz = 0
     for i in Q.keys():
@@ -73,27 +87,33 @@ def avg_score(Q):
     return [round(a/len(Q.keys()),2) for a in actions], taz
 
 def Q_learning(gamma=0.9, epsilon=1, decay=0.999, q_path=None):
+    """
+    Train the Agent by populating and optimizing the Q-table. Uses Epsilon-Greedy.
+    """
 
+    # Tracking metrics
     start = datetime.now()
     checkpoint = datetime.now()
     logging = []
     unique_states = set()
     episode = 0
 
+    # Initialize the Q- and num-updates tables using a given path, if provided. Otherwise, as default
     loaded = read_q(q_path)
     Q = loaded if loaded is not None else {}
-
     if loaded is None:
         for i in range(NUM_STATES):
             Q[i] = np.zeros(NUM_ACTIONS)
     num_updates = np.zeros((NUM_STATES, NUM_ACTIONS))
 
+    # Run for the noted period of time
     while datetime.now() < start + timedelta(minutes=RUNTIME):
         
+        # If at a 5-minute interval, perform a test to see progress
         if datetime.now() > checkpoint + timedelta(minutes=5):
-            print("{} out of ?? episodes. The Q table has {} entries and has seen {} unique states, the exploration rate is {}".format(episode, 
+            print("{} out of ?? episodes. The Q table has {} entries and has seen {} unique states, the exploration rate is {}".format(episode,
                                                                                                                                        len(Q.keys()),
-                                                                                                                                       len(unique_states), 
+                                                                                                                                       len(unique_states),
                                                                                                                                        epsilon))
             avg, wins, loses, legal, illegal = test_table(Q, 10000)
             print("The Q_Table got an average reward of {} with {} wins and {} loses for a win percentage of {}".format(
@@ -117,6 +137,7 @@ def Q_learning(gamma=0.9, epsilon=1, decay=0.999, q_path=None):
         obs, reward, done = env.reset()
         moves = 0
 
+        # Play a game to completion
         while not done:
 
             hs = QPlayer.hash(obs)

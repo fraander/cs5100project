@@ -4,6 +4,11 @@ from RandomPlayer import RandomPlayer
 from uno import UnoGame, COLORS
 
 class TrainingEnvironment:
+    """
+    Handles player moves in the appropriate order. Gives the appropriate reward to the AI agent after the AI Player goes.
+    """
+
+
     num_players = 3
 
     rewards = {
@@ -15,24 +20,12 @@ class TrainingEnvironment:
         'lose': -10000,
     }
 
-    actions = {
-        0: "match_color",
-        1: "match_number",
-        2: "skip",
-        3: "reverse",
-        4: "draw_2",
-        5: "draw_4_red",
-        6: "draw_4_blue",
-        7: "draw_4_green",
-        8: "draw_4_yellow",
-        9: "wild_red",
-        10: "wild_blue",
-        11: "wild_green",
-        12: "wild_yellow"
-    }
-
 
     def reset(self):
+        """
+        Reset the game
+        """
+        
         self.game = UnoGame(self.num_players)
         self.player_number = np.random.randint(0, self.num_players)
 
@@ -41,90 +34,22 @@ class TrainingEnvironment:
         self.handle_other_players()
 
         obs = {
-    "current_card": self.game.current_card,
-    "hand": self.game.current_player.hand,
-    "history": self.game.history,
-    "player_number": self.player_number,
-    "direction": self.game._player_cycle._reverse,
-}
+            "current_card": self.game.current_card,
+            "hand": self.game.current_player.hand,
+            "history": self.game.history,
+            "player_number": self.player_number,
+            "direction": self.game._player_cycle._reverse,
+        }
 
         reward = 0
         done = not self.game.is_active
         return obs, reward, done
 
-    '''
-    helper methods for actions
-    '''
-
-    @staticmethod
-    def matching_number(card, current):
-        return card.card_type == current.card_type and current.playable(card)
-    
-    @staticmethod
-    def matching_color(card, current):
-        if current.color == "black":
-            return card.color == current.temp_color and current.playable(card)
-        return card.color == current.color and current.playable(card)
-
-    @staticmethod
-    def play_skip(card, current):
-        return card.card_type == 'skip' and current.playable(card)
-
-    @staticmethod
-    def play_reverse(card, current):
-        return card.card_type == 'reverse' and current.playable(card)
-
-    @staticmethod
-    def play_draw_two(card, current):
-        return card.card_type == '+2' and current.playable(card)
-
-    @staticmethod
-    def play_draw_four(card, current):
-        return card.card_type == '+4' and current.playable(card)
-
-    @staticmethod
-    def play_wild(card, current):
-        return card.card_type == 'wildcard' and current.playable(card)
-
-    # Moves are:
-    # 1 - play the matching color
-    # 2 - play the matching number
-    # 3 - play a skip
-    # 4 - play a reverse
-    # 5 - play a draw 2
-    # 6 - play a draw 4
-    # 7 - play a wildcard
-    def get_move_filter(self, move):
-        move_mapping = {
-            0: self.matching_color,
-            1: self.matching_number,
-            2: self.play_skip,
-            3: self.play_reverse,
-            4: self.play_draw_two,
-            5: self.play_draw_four,
-            6: self.play_draw_four,
-            7: self.play_draw_four,
-            8: self.play_draw_four,
-            9: self.play_wild,
-            10: self.play_wild,
-            11: self.play_wild,
-            12: self.play_wild,
-        }
-        return move_mapping.get(move, None)
-
-    @staticmethod
-    def choose_card_index(hand, current, filter_fn, move):
-        best_card = None
-        for idx, card in enumerate(hand):
-            if filter_fn(card, current):
-                if move < 5 and card.color == 'black':
-                    continue
-                if card.card_type in ["+2"]:  
-                    return idx  # Prioritize only the +2 action card 
-                best_card = idx  
-        return best_card  # Play normal card only if no action cards available
 
     def handle_other_players(self):
+        """
+        Runt through actions of non-AI players.
+        """
         while self.game.is_active and (
                 self.game.current_player.player_id != self.player_number or
                 not self.game.current_player.can_play(self.game.current_card)
@@ -138,12 +63,15 @@ class TrainingEnvironment:
                 self.game.play(player=player_id, card=None)
 
     def move(self, move):
-        #print("Move", move)
+        """
+        Called during reinforcement with the QPlayer's move to make.
+        """
+    
         hand = self.game.current_player.hand
         current = self.game.current_card
 
         # Get the filtering function and intended new color for the move
-        filter_fn = self.get_move_filter(move)
+        filter_fn = QPlayer.get_move_filter(move)
         if filter_fn is None:
             #print("Thats not an action")
             obs = {"hand": hand, "current_card": current, "history": self.game.history, "player_number": self.player_number, "direction": self.game._player_cycle._reverse}
@@ -179,6 +107,7 @@ class TrainingEnvironment:
         else:
             new_color = None
         #print(move, new_color)
+        
         # Attempt to play the selected card
         try:
             self.game.play(player=self.player_number, card=card_index, new_color=new_color)

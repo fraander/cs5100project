@@ -135,8 +135,9 @@ wins = 0
 loses = 0
 env = TrainingEnvironment()
 logs = []
+move_dist = [0,0,0,0,0,0,0,0,0,0,0,0,0]
 
-for episode in range(10000):
+for episode in range(1000):
     if episode % 10000 == 0:
         print(episode)
     obs, reward, done = env.reset()
@@ -147,6 +148,7 @@ for episode in range(10000):
         hs = hash(obs)
 
         action = np.argmax(Q[hs])
+        move_dist[action] += 1
 
         obs, reward, done = env.move(action)
         
@@ -168,3 +170,4 @@ for episode in range(10000):
 #    csvwriter.writerows(logs)
 
 print("Over 100000 episodes there were {} wins and {} loses for a win percentage of {}".format(wins, loses, wins/(wins+loses)))
+print(move_dist, sum(move_dist))

@@ -421,7 +421,7 @@ game = AIUnoGame(num_players)
 
 WIDTH = 1000
 HEIGHT = 800
-DELAY = 0.1
+DELAY = 1
 
 deck_img = Actor('back')
 color_imgs = {color: Actor(color) for color in COLORS}

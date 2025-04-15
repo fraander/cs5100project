@@ -9,8 +9,8 @@ env = TrainingEnvironment()
 NUM_ACTIONS = 13
 NUM_STATES = 76801
 
-LOGS = "./logs/logs3.26.csv"
-PICKLE = "./pickles/pickle3.26.pickle"
+LOGS = "./logs/logs4.4.csv"
+PICKLE = "./pickles/pickle4.4.pickle"
 
 # Open the Q-table from a file
 def read_q(file_path=None):
@@ -206,7 +206,7 @@ def Q_learning(gamma=0.9, epsilon=1, decay=0.999, q_path=None):
             Q[i] = np.zeros(NUM_ACTIONS)
     num_updates = np.zeros((NUM_STATES, NUM_ACTIONS))
 
-    while datetime.now() < start + timedelta(minutes=720):
+    while datetime.now() < start + timedelta(minutes=960):
         
         if datetime.now() > checkpoint + timedelta(minutes=5):
             print("{} out of ?? episodes. The Q table has {} entries and has seen {} unique states, the exploration rate is {}".format(episode, 

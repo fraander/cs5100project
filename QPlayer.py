@@ -9,6 +9,10 @@ class QPlayer(Player):
     def __init__(self):
         with open(PICKLE, "rb") as file:
             self.Q = pickle.load(file)
+        
+        for i in range(len(self.Q)):
+            self.Q[i] = [float(l.split("(")[1][:-1]) for l in self.Q[i][0]]
+
         super().__init__()
 
     def hash(self, obs) -> int:
@@ -196,15 +200,13 @@ class QPlayer(Player):
         
         action = np.argmax(self.Q[hs])
 
-        print("Q Players turn:")
-        print("State is {}, action selected is {}".format(hs, action))
-
         # Get the filtering function and intended new color for the move
         filter_fn = self.get_move_filter(action)
 
         # Choose a legal card index based on the filter
         card_index = self.choose_card_index(hand, current_card, filter_fn, action)
         if card_index is None:
+            print("---------------------Returning early----------------------")
             playable = [card for card in hand if current_card.playable(card)]
             return hand.index(np.random.choice(playable)), np.random.choice(["red", "blue", "green", "yellow"])
         
@@ -226,5 +228,24 @@ class QPlayer(Player):
             new_color = color_inds[3]
         else:
             new_color = None
+        
+        actions = {
+            0: "match the current color",
+            1: "match the current number",
+            2: "play a skip card",
+            3: "play a reverse card",
+            4: "play a draw 2",
+            5: "play a draw 4 - switch to {}".format(new_color),
+            6: "play a draw 4 - switch to {}".format(new_color),
+            7: "play a draw 4 - switch to {}".format(new_color),
+            8: "play a draw 4 - switch to {}".format(new_color),
+            9: "play a wild - switch to {}".format(new_color),
+            10: "play a wild - switch to {}".format(new_color),
+            11: "play a wild - switch to {}".format(new_color),
+            12: "play a wild - switch to {}".format(new_color)
+        }
+
+        print("Q Players turn:")
+        print("State is {}, action selected is {}: {}".format(hs, action, actions[action]))
 
         return card_index, new_color

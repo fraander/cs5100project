@@ -39,4 +39,4 @@ We compared against other agent implementations to verify the signficance of our
 - **Random** [[compare/random](https://github.com/fraander/cs5100project/tree/compare/random)] Randomly takes valid actions
 
 ## Further exploration
-Following submission of the project we've explored Deep Q-Learning as a potential future improvement. See the progress on the `experiment/dqn-model` branch!
+Following submission of the project we've explored Deep Q-Learning as a potential future improvement. See the progress on the [experiment/dqn-model](https://github.com/fraander/cs5100project/tree/experiment/dqn-model) branch!

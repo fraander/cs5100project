@@ -1,5 +1,5 @@
-from uno import COLORS
-from Player import Player
+from uno.uno import COLORS
+from player.Player import Player
 import random
 
 class RandomPlayer(Player):

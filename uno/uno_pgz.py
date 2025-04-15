@@ -2,7 +2,7 @@ import numpy as np
 from itertools import product, repeat, chain
 from threading import Thread
 from time import sleep
-from QPlayer import QPlayer
+from player.QPlayer import QPlayer
 
 
 COLORS = ['red', 'yellow', 'green', 'blue']

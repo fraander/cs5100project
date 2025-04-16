@@ -161,6 +161,7 @@ def Q_learning(gamma=0.9, epsilon=1, decay=0.999, q_path=None):
         episode += 1
         #print("That game had {} steps and ended with result {}".format(moves, reward))
 
+
     return Q, logging
 
 

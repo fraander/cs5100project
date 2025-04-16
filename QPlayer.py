@@ -3,19 +3,21 @@ import numpy as np
 import pickle
 
 # !! Configuration !!
-PICKLE = "./pickle_final.pickle"
+PICKLE = "./logs3.25.pickle"
 
 class QPlayer(Player):
     """
     Player class for the AI agent.
     """
     
-    def __init__(self):
+    def __init__(self, game_rule):
         # Open the desired Q-table to play using
         with open(PICKLE, "rb") as file:
             self.Q = pickle.load(file)
 
         super().__init__()
+        self.game_rule = game_rule
+
 
     # Convert game observations to a lookup value for the Q-table
     @staticmethod
@@ -167,6 +169,15 @@ class QPlayer(Player):
 
     @staticmethod
     def choose_card_index(hand, current, filter_fn, move):
+        for idx, card in enumerate(hand):
+            # 1) If ANY black card is playable, pick it first.
+            if card.color == 'black' and current.playable(card):
+                return idx
+
+            # 2) If ANY +2/Skip/Reverse card playable
+            if (card.card_type == 'skip' or card.card_type == 'reverse' or card.card_type == '+2') and current.playable(card):
+                return idx
+
         best_card = None
         for idx, card in enumerate(hand):
             if filter_fn(card, current):

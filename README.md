@@ -13,7 +13,7 @@
 - **[RUN WITH GUI]** To run with a GUI active, run the command `pgzrun uno_pgz.py` in the Terminal, to run using the `pgzero` library.
 	- To choose which Q-table is used in play, configure `PICKLE = ` in the `QPlayer.py` file
 	- `uno_pgz.py` will run one uno game between the Q-table and 2 players playing randomly. The current state and action chosen by the Q-table will be printed to the console at each turn.
-- **[PLAY A GAME]** To play a game yourself agains the Q Agent, run `pgzrun play_uno.py`. This will open up a 3-player game with graphics where you play against one Q Agent and one Random Player.
+- **[PLAY A GAME]** To play a game yourself against the Q Agent, run `pgzrun play_uno.py`. This will open up a 3-player game with graphics where you play against one Q Agent and one Random Player.
 	- To play a card, simply click the card. If you have no cards that you can play, click on the deck in the upper left to draw a card.
 	- Sometimes you may need to click multiple times to get the card to play.
 	- When a black card is played, the new color will display next to the pile.

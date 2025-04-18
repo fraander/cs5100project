@@ -5,7 +5,7 @@ import csv
 from QPlayer import QPlayer
 
 PICKLE = "./pickle_final.pickle"
-TEST_SIZE = 10000 # number of games to play
+TEST_SIZE = 1000 # number of games to play
 
 # Open the chosen Pickle to run the test with
 with open(PICKLE, "rb") as file:
@@ -36,7 +36,6 @@ for episode in range(TEST_SIZE):
         
         # Update the metrics as relevant
         if reward == TrainingEnvironment.rewards['wrong_card']:
-            print(obs['current_card'], action)
             done = True
             loses += 1
         elif reward == TrainingEnvironment.rewards['lose']:
@@ -48,4 +47,5 @@ for episode in range(TEST_SIZE):
 
 
 print("Over 100000 episodes there were {} wins and {} loses for a win percentage of {}".format(wins, loses, wins/(wins+loses)))
-print(move_dist, sum(move_dist))
+print("Move distribution:")
+print(move_dist, "total moves made:", sum(move_dist))

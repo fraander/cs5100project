@@ -11,8 +11,8 @@ NUM_ACTIONS = 13
 NUM_STATES = 76801
 
 # !! Configuration !!
-LOGS = "./logs/logs4.4.csv"
-PICKLE = "./pickles/pickle4.4.pickle"
+LOGS = "./logs/logs4.15.csv"
+PICKLE = "./pickles/pickle4.15.pickle"
 RUNTIME = 750 # measured in minutes
 
 # Open the Q-table from a file
